@@ -1,5 +1,5 @@
 // ============================================
-// SCRIPT.JS - BOSNAS APP v3.0 (FULL VERSION)
+// SCRIPT.JS - BOSNAS APP v3.0 (DENGAN PROXY)
 // ============================================
 
 let allData = [];
@@ -61,18 +61,17 @@ function toggleMetode() {
 }
 
 // ============================================
-// CALL WEB APP API
+// CALL PROXY (UNTUK WRITE OPERATIONS)
 // ============================================
 
-async function callWebApp(action, data = {}) {
+async function callProxy(action, data = {}) {
     try {
         const payload = { action, ...data };
         
-        console.log(`📡 Calling Web App: ${action}`, payload);
+        console.log(`📡 Calling Proxy: ${action}`, payload);
         
-        const response = await fetch(CONFIG.webAppUrl, {
+        const response = await fetch(CONFIG.proxyUrl, {
             method: 'POST',
-            mode: 'cors',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -85,11 +84,11 @@ async function callWebApp(action, data = {}) {
         }
         
         const result = await response.json();
-        console.log(`✅ Web App Response:`, result);
+        console.log(`✅ Proxy Response:`, result);
         return result;
         
     } catch (error) {
-        console.error('❌ Web App Error:', error);
+        console.error('❌ Proxy Error:', error);
         throw error;
     }
 }
@@ -460,7 +459,7 @@ function updateChart() {
 }
 
 // ============================================
-// CRUD OPERATIONS (via Web App)
+// CRUD OPERATIONS (via Proxy)
 // ============================================
 
 function showAddModal() {
@@ -525,8 +524,8 @@ async function saveTransaction(e) {
     btn.disabled = true;
     
     try {
-        // CALL WEB APP (bukan proxy)
-        const result = await callWebApp(action, data);
+        // PAKAI PROXY (BUKAN LANGSUNG KE WEB APP)
+        const result = await callProxy(action, data);
         
         if (result.success) {
             Swal.fire('Berhasil!', result.message, 'success');
@@ -537,26 +536,7 @@ async function saveTransaction(e) {
         }
     } catch (error) {
         console.error('Save error:', error);
-        
-        // Cek apakah error karena CORS
-        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-            Swal.fire({
-                title: '⚠️ CORS Error',
-                html: `
-                    <p>Tidak dapat menyimpan data karena <strong>CORS</strong>.</p>
-                    <br>
-                    <div style="text-align:left;font-size:13px;color:#666;">
-                        <strong>💡 Solusi:</strong><br>
-                        1. Deploy ulang Google Apps Script dengan setting <strong>"Anyone"</strong><br>
-                        2. Atau gunakan data secara manual di Google Sheets
-                    </div>
-                `,
-                icon: 'warning',
-                confirmButtonText: 'OK'
-            });
-        } else {
-            Swal.fire('Error!', error.message || 'Terjadi kesalahan saat menyimpan', 'error');
-        }
+        Swal.fire('Error!', error.message || 'Terjadi kesalahan saat menyimpan', 'error');
     } finally {
         btn.textContent = originalText;
         btn.disabled = false;
@@ -578,7 +558,8 @@ async function deleteTransaction(id) {
     if (!result.isConfirmed) return;
     
     try {
-        const data = await callWebApp('delete', { id });
+        // PAKAI PROXY (BUKAN LANGSUNG KE WEB APP)
+        const data = await callProxy('delete', { id });
         
         if (data.success) {
             Swal.fire('Terhapus!', data.message, 'success');
