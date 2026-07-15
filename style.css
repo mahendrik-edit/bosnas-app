@@ -1,5 +1,5 @@
 /* ============================================
-   CSS Lengkap
+   CSS - BOSNAS App v3.0
    ============================================ */
 
 * {
@@ -15,6 +15,7 @@
     --red: #ef4444;
     --blue: #3b82f6;
     --purple: #8b5cf6;
+    --orange: #f59e0b;
     --gray: #6b7280;
     --gray-light: #f3f4f6;
     --shadow: 0 2px 10px rgba(0,0,0,0.08);
@@ -87,12 +88,17 @@ header {
     transition: all 0.3s;
 }
 
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .btn-refresh {
     background: var(--gray-light);
     color: var(--gray);
 }
 
-.btn-refresh:hover {
+.btn-refresh:hover:not(:disabled) {
     background: #e5e7eb;
 }
 
@@ -101,7 +107,7 @@ header {
     color: white;
 }
 
-.btn-add:hover {
+.btn-add:hover:not(:disabled) {
     background: var(--primary-light);
 }
 
@@ -146,10 +152,60 @@ header {
     font-weight: 700;
 }
 
-.card-green p { color: var(--green); }
-.card-red p { color: var(--red); }
+.card small {
+    font-size: 12px;
+    color: var(--gray);
+    display: block;
+    margin-top: 2px;
+}
+
 .card-blue p { color: var(--blue); }
 .card-purple p { color: var(--purple); }
+.card-green p { color: var(--green); }
+.card-orange p { color: var(--orange); }
+
+/* ============================================
+   METODE SECTION
+   ============================================ */
+
+.metode-section {
+    background: white;
+    padding: 18px 22px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.metode-section h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: var(--gray);
+}
+
+.metode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.metode-card {
+    background: var(--gray-light);
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.metode-card span {
+    font-size: 14px;
+    color: var(--gray);
+}
+
+.metode-card strong {
+    font-size: 16px;
+    color: var(--primary);
+}
 
 /* ============================================
    FILTER
@@ -327,7 +383,7 @@ table tr:hover td {
     background: #f8f9ff;
 }
 
-table .badge-status {
+.badge-status {
     padding: 2px 10px;
     border-radius: 20px;
     font-size: 12px;
@@ -338,9 +394,19 @@ table .badge-status {
 .badge-status.pending { background: #fef3c7; color: #92400e; }
 .badge-status.ditolak { background: #fee2e2; color: #991b1b; }
 
-table .text-green { color: var(--green); font-weight: 600; }
-table .text-red { color: var(--red); font-weight: 600; }
-table .text-blue { color: var(--blue); font-weight: 600; }
+.badge-kategori {
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-kategori.spj { background: #dbeafe; color: #1e40af; }
+.badge-kategori.taktis { background: #f3e8ff; color: #6b21a8; }
+
+.text-green { color: var(--green); font-weight: 600; }
+.text-red { color: var(--red); font-weight: 600; }
+.text-blue { color: var(--blue); font-weight: 600; }
 
 .btn-action {
     padding: 4px 10px;
@@ -462,8 +528,8 @@ table .text-blue { color: var(--blue); font-weight: 600; }
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 14px;
-    transition: border 0.2s;
     font-family: inherit;
+    transition: border 0.2s;
 }
 
 .form-group input:focus,
@@ -476,6 +542,11 @@ table .text-blue { color: var(--blue); font-weight: 600; }
 
 .form-group textarea {
     resize: vertical;
+}
+
+.form-group small {
+    color: var(--gray);
+    font-size: 12px;
 }
 
 .form-actions {
@@ -511,8 +582,13 @@ table .text-blue { color: var(--blue); font-weight: 600; }
     font-weight: 500;
 }
 
-.btn-save:hover {
+.btn-save:hover:not(:disabled) {
     background: var(--primary-light);
+}
+
+.btn-save:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* ============================================
@@ -526,6 +602,7 @@ table .text-blue { color: var(--blue); font-weight: 600; }
     .header-right { justify-content: flex-start; }
     
     .summary { grid-template-columns: 1fr 1fr; }
+    .metode-grid { grid-template-columns: 1fr; }
     
     .filter-section { flex-direction: column; align-items: stretch; }
     .filter-group { flex-wrap: wrap; }
