@@ -16,11 +16,12 @@
         <div class="header-left">
             <h1>📊 BOSNAS 2026</h1>
             <span class="badge">v3.0</span>
+            <span class="badge-mode" id="modeBadge">🔒 Read-Only</span>
         </div>
         <div class="header-right">
             <span id="lastUpdated">🔄 Loading...</span>
             <button onclick="refreshData()" class="btn btn-refresh">🔄 Refresh</button>
-            <button onclick="showAddModal()" class="btn btn-add">➕ Tambah</button>
+            <button onclick="showAddModal()" class="btn btn-add" id="btnAdd">➕ Tambah</button>
         </div>
     </header>
 
@@ -28,7 +29,6 @@
     <!-- DASHBOARD CARDS -->
     <!-- ============================================ -->
     <section class="summary">
-        <!-- Card SPJ -->
         <div class="card card-blue">
             <div class="card-icon">📘</div>
             <div>
@@ -38,7 +38,6 @@
             </div>
         </div>
         
-        <!-- Card TAKTIS -->
         <div class="card card-purple">
             <div class="card-icon">📗</div>
             <div>
@@ -48,7 +47,6 @@
             </div>
         </div>
         
-        <!-- Card Total -->
         <div class="card card-green">
             <div class="card-icon">📊</div>
             <div>
@@ -57,7 +55,6 @@
             </div>
         </div>
 
-        <!-- Card Transaksi -->
         <div class="card card-orange">
             <div class="card-icon">📋</div>
             <div>
@@ -160,6 +157,11 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Info Mode Read-Only -->
+        <div class="readonly-info" id="readonlyInfo">
+            <span>🔒 Mode <strong>Read-Only</strong> - Untuk menambah/edit data, buka Google Sheets langsung</span>
+        </div>
     </section>
 
     <!-- ============================================ -->
@@ -206,7 +208,6 @@
                     </div>
                 </div>
 
-                <!-- Metode (khusus SPJ + Pengeluaran) -->
                 <div class="form-group" id="metodeGroup" style="display:none;">
                     <label>Metode Pembayaran</label>
                     <select id="formMetode">
@@ -227,7 +228,7 @@
 
                 <div class="form-actions">
                     <button type="button" onclick="closeModal()" class="btn-cancel">Batal</button>
-                    <button type="submit" class="btn-save">💾 Simpan</button>
+                    <button type="submit" class="btn-save" id="btnSave">💾 Simpan</button>
                 </div>
             </form>
         </div>
