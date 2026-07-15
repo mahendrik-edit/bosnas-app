@@ -7,7 +7,7 @@ const CONFIG = {
     // GOOGLE APPS SCRIPT WEB APP URL
     // Deploy Apps Script dan copy URL-nya di sini
     // ==========================================
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbzj70MtoBUvW-pIqJ0rAhOKMGkavgXtbVUMRx5S7e5DslTSyPoNt0xv2UGMKs2aI2KTDQ/exec',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbyUxAgBBzzh2JDQGH0CJ_jxslpox2adqy5Uax90-umQuKnXWM7H2zhvNLewgNwmi9lugw/exec',
     
     // ==========================================
     // SPREADSHEET ID (Untuk fallback)
