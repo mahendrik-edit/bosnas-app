@@ -1,5 +1,5 @@
 // ============================================
-// SCRIPT.JS - BOSNAS APP v3.0 (FIXED)
+// SCRIPT.JS - BOSNAS APP v3.0 (API KEY ONLY)
 // ============================================
 
 let allData = [];
@@ -8,7 +8,7 @@ let currentPage = 1;
 const rowsPerPage = 20;
 
 // ============================================
-// HELPER FUNCTIONS (Didefinisikan di awal)
+// HELPER FUNCTIONS
 // ============================================
 
 function formatRupiah(angka) {
@@ -27,7 +27,7 @@ function updateLastUpdated() {
 }
 
 // ============================================
-// TOGGLE METODE (SPJ + Pengeluaran)
+// TOGGLE METODE
 // ============================================
 
 function toggleMetode() {
@@ -44,12 +44,14 @@ function toggleMetode() {
 }
 
 // ============================================
-// FETCH VIA API KEY (NO CORS - RECOMMENDED)
+// FETCH VIA API KEY (SATU-SATUNYA SUMBER)
 // ============================================
 
 async function fetchDataViaAPI() {
     try {
         console.log('📡 Fetching data via API Key...');
+        console.log('Spreadsheet ID:', CONFIG.spreadsheetId);
+        console.log('API Key:', CONFIG.apiKey.substring(0, 10) + '...');
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.spreadsheetId}/values/MASTER_DATA!A:I?key=${CONFIG.apiKey}`;
         const response = await fetch(url);
@@ -59,7 +61,17 @@ async function fetchDataViaAPI() {
         if (!response.ok) {
             const errorText = await response.text();
             console.error('API Error Response:', errorText);
-            throw new Error(`API Error: ${response.status} - ${errorText}`);
+            
+            // Parse error dari Google
+            let errorMessage = `HTTP ${response.status}`;
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorMessage = errorJson.error?.message || errorMessage;
+            } catch (e) {
+                // Ignore
+            }
+            
+            throw new Error(`API Error: ${errorMessage}`);
         }
         
         const result = await response.json();
@@ -73,8 +85,8 @@ async function fetchDataViaAPI() {
         }
         
         // Parse data
-        const data = rows.slice(1).map(row => ({
-            id: row[0] || '',
+        const data = rows.slice(1).map((row, index) => ({
+            id: row[0] || `AUTO-${index + 1}`,
             tanggal: row[1] || '',
             bulan: row[2] || '',
             keterangan: row[3] || '',
@@ -90,41 +102,12 @@ async function fetchDataViaAPI() {
         
     } catch (error) {
         console.error('❌ API Key fetch error:', error);
-        return [];
+        throw error; // Lempar error agar ditangkap di loadData
     }
 }
 
 // ============================================
-// FETCH VIA WEB APP (CORS - mungkin gagal)
-// ============================================
-
-async function fetchDataViaWebApp() {
-    try {
-        console.log('📡 Fetching data via Web App...');
-        
-        const response = await fetch(`${CONFIG.webAppUrl}?action=all`, {
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Web App Error: ${response.status}`);
-        }
-        
-        const result = await response.json();
-        console.log(`✅ Loaded ${result.data?.length || 0} rows from Web App`);
-        return result.data || [];
-        
-    } catch (error) {
-        console.error('❌ Web App fetch error:', error);
-        return [];
-    }
-}
-
-// ============================================
-// LOAD DATA
+// LOAD DATA - HANYA API KEY
 // ============================================
 
 async function loadData() {
@@ -132,25 +115,16 @@ async function loadData() {
     tbody.innerHTML = '<tr><td colspan="10" class="loading">⏳ Loading data...</td></tr>';
     
     try {
-        // 1. COBA PAKAI API KEY (NO CORS)
-        let data = await fetchDataViaAPI();
+        // HANYA PAKAI API KEY
+        const data = await fetchDataViaAPI();
         
-        // 2. Jika API Key gagal, coba Web App
         if (!data || data.length === 0) {
-            console.warn('⚠️ API Key gagal, mencoba Web App...');
-            data = await fetchDataViaWebApp();
+            throw new Error('Tidak ada data dari Google Sheets. Pastikan sheet "MASTER_DATA" terisi.');
         }
         
-        // 3. Jika masih gagal, throw error
-        if (!data || data.length === 0) {
-            throw new Error('Tidak ada data dari kedua sumber');
-        }
-        
-        // 4. Simpan data
         allData = data;
         console.log(`✅ Berhasil load ${data.length} data`);
         
-        // 5. Update UI
         loadBulanDropdown();
         updateSummary();
         updateTable();
@@ -161,11 +135,18 @@ async function loadData() {
         console.error('❌ Error:', error);
         tbody.innerHTML = `
             <tr><td colspan="10" style="color:red;text-align:center;padding:20px;">
-                ❌ ${error.message}
+                <div style="font-size:24px;margin-bottom:10px;">❌</div>
+                <strong>${error.message}</strong>
                 <br><br>
-                <button onclick="loadData()" class="btn btn-refresh">🔄 Coba Lagi</button>
-                <br><br>
-                <small style="color:#999;">Pastikan Google Sheets API sudah diaktifkan</small>
+                <div style="text-align:left;max-width:500px;margin:0 auto;background:#f8f9fa;padding:15px;border-radius:8px;font-size:13px;color:#666;">
+                    <strong>💡 Solusi:</strong><br>
+                    1. Pastikan Google Sheets API sudah diaktifkan<br>
+                    2. Pastikan API Key valid dan memiliki akses ke spreadsheet<br>
+                    3. Pastikan sheet bernama <strong>MASTER_DATA</strong><br>
+                    4. Pastikan spreadsheet ID benar
+                </div>
+                <br>
+                <button onclick="loadData()" class="btn btn-refresh" style="padding:10px 30px;">🔄 Coba Lagi</button>
             </td></tr>
         `;
     }
@@ -186,18 +167,14 @@ function loadBulanDropdown() {
     const sortedBulan = ['Januari','Februari','Maret','April','Mei','Juni',
                          'Juli','Agustus','September','Oktober','November','Desember'];
     
-    let addedCount = 0;
     sortedBulan.forEach(bulan => {
         if (bulanSet.has(bulan)) {
             const option = document.createElement('option');
             option.value = bulan;
             option.textContent = bulan;
             select.appendChild(option);
-            addedCount++;
         }
     });
-    
-    console.log(`📅 Added ${addedCount} bulan to dropdown`);
 }
 
 // ============================================
@@ -230,7 +207,6 @@ function updateSummary() {
     const saldoTAKTIS = taktisPemasukan - taktisPengeluaran;
     const totalSaldo = saldoSPJ + saldoTAKTIS;
     
-    // UPDATE UI
     document.getElementById('saldoSPJ').textContent = formatRupiah(saldoSPJ);
     document.getElementById('saldoTAKTIS').textContent = formatRupiah(saldoTAKTIS);
     document.getElementById('totalSaldo').textContent = formatRupiah(totalSaldo);
@@ -424,7 +400,7 @@ function updateChart() {
 }
 
 // ============================================
-// CRUD OPERATIONS (via Web App)
+// CRUD OPERATIONS (Masih via Web App - CORS tetap)
 // ============================================
 
 function showAddModal() {
@@ -486,6 +462,7 @@ async function saveTransaction(e) {
     btn.disabled = true;
     
     try {
+        // CORS akan error di sini!
         const response = await fetch(CONFIG.webAppUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -502,7 +479,8 @@ async function saveTransaction(e) {
             Swal.fire('Gagal!', result.error || 'Terjadi kesalahan', 'error');
         }
     } catch (error) {
-        Swal.fire('Error!', error.message, 'error');
+        console.error('Save error:', error);
+        Swal.fire('Error!', 'Gagal menyimpan data. CORS error.', 'error');
     } finally {
         btn.textContent = '💾 Simpan';
         btn.disabled = false;
@@ -539,7 +517,8 @@ async function deleteTransaction(id) {
             Swal.fire('Gagal!', data.error || 'Terjadi kesalahan', 'error');
         }
     } catch (error) {
-        Swal.fire('Error!', error.message, 'error');
+        console.error('Delete error:', error);
+        Swal.fire('Error!', 'Gagal menghapus data. CORS error.', 'error');
     }
 }
 
@@ -586,7 +565,7 @@ function exportData() {
 }
 
 // ============================================
-// REFRESH (Didefinisikan SEBELUM dipanggil)
+// REFRESH
 // ============================================
 
 function refreshData() {
