@@ -43,6 +43,7 @@
         .header-actions {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         
         .btn {
@@ -53,6 +54,7 @@
             font-size: 1em;
             transition: all 0.3s;
             font-weight: 600;
+            text-decoration: none;
         }
         
         .btn-primary {
@@ -62,6 +64,7 @@
         
         .btn-primary:hover {
             background: #f0f2f5;
+            transform: translateY(-2px);
         }
         
         .btn-success {
@@ -71,6 +74,7 @@
         
         .btn-success:hover {
             background: #059669;
+            transform: translateY(-2px);
         }
         
         .btn-danger {
@@ -80,6 +84,7 @@
         
         .btn-danger:hover {
             background: #dc2626;
+            transform: translateY(-2px);
         }
         
         .btn-warning {
@@ -89,13 +94,29 @@
         
         .btn-warning:hover {
             background: #d97706;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+        
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8em;
         }
         
         /* Summary Cards */
         .summary-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
             margin-bottom: 30px;
         }
         
@@ -104,28 +125,28 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .card h3 {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 0.85em;
+            color: #6b7280;
+            margin-bottom: 8px;
         }
         
         .card .amount {
-            font-size: 1.5em;
+            font-size: 1.4em;
             font-weight: bold;
         }
         
         .card .sub-info {
-            font-size: 0.8em;
-            color: #999;
+            font-size: 0.75em;
+            color: #9ca3af;
             margin-top: 5px;
         }
         
@@ -137,7 +158,7 @@
         /* Tabs */
         .tabs {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
@@ -148,12 +169,14 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.95em;
             transition: all 0.3s;
+            font-weight: 500;
         }
         
         .tab:hover {
             background: #e5e7eb;
+            transform: translateY(-2px);
         }
         
         .tab.active {
@@ -172,7 +195,7 @@
         
         .filter-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -183,10 +206,10 @@
         }
         
         .filter-group label {
-            font-size: 0.9em;
+            font-size: 0.85em;
             font-weight: 600;
             margin-bottom: 5px;
-            color: #666;
+            color: #6b7280;
         }
         
         .filter-group input,
@@ -195,6 +218,13 @@
             border: 1px solid #d1d5db;
             border-radius: 5px;
             font-size: 0.95em;
+            transition: border-color 0.3s;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
         .filter-actions {
@@ -226,7 +256,12 @@
         .form-group label {
             font-weight: 600;
             margin-bottom: 5px;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            color: #4b5563;
+        }
+        
+        .form-group label .required {
+            color: #ef4444;
         }
         
         .form-group input,
@@ -235,6 +270,13 @@
             border: 1px solid #d1d5db;
             border-radius: 5px;
             font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
         }
         
         .form-actions {
@@ -263,12 +305,13 @@
         }
         
         .table-header h3 {
-            font-size: 1.2em;
+            font-size: 1.1em;
+            color: #1f2937;
         }
         
         .table-info {
-            font-size: 0.9em;
-            color: #666;
+            font-size: 0.85em;
+            color: #6b7280;
         }
         
         table {
@@ -282,13 +325,14 @@
             text-align: left;
             border-bottom: 2px solid #e5e7eb;
             font-weight: 600;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            color: #4b5563;
         }
         
         td {
             padding: 12px;
             border-bottom: 1px solid #e5e7eb;
-            font-size: 0.95em;
+            font-size: 0.9em;
         }
         
         tr:hover {
@@ -298,11 +342,7 @@
         .actions-cell {
             display: flex;
             gap: 5px;
-        }
-        
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 0.8em;
+            flex-wrap: wrap;
         }
         
         .hidden {
@@ -311,17 +351,17 @@
         
         .loading {
             text-align: center;
-            padding: 20px;
-            color: #666;
+            padding: 40px;
+            color: #6b7280;
         }
         
         .empty-state {
             text-align: center;
             padding: 40px;
-            color: #999;
+            color: #9ca3af;
         }
         
-        .empty-state i {
+        .empty-state .icon {
             font-size: 3em;
             margin-bottom: 10px;
         }
@@ -336,6 +376,12 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0,0,0,0.5);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         
         .modal-content {
@@ -347,6 +393,12 @@
             max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
+            animation: slideIn 0.3s;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         
         .modal-header {
@@ -358,22 +410,54 @@
         
         .modal-header h2 {
             font-size: 1.3em;
+            color: #1f2937;
         }
         
         .close {
             font-size: 1.5em;
             cursor: pointer;
-            color: #999;
+            color: #9ca3af;
+            transition: color 0.3s;
         }
         
         .close:hover {
-            color: #333;
+            color: #1f2937;
+        }
+        
+        /* Connection Status */
+        #connectionStatus {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+        
+        #connectionStatus.connected {
+            background: #10b981;
+            color: white;
+        }
+        
+        #connectionStatus.error {
+            background: #ef4444;
+            color: white;
+        }
+        
+        #connectionStatus.checking {
+            background: #f59e0b;
+            color: white;
         }
         
         /* Responsive */
         @media (max-width: 768px) {
             .summary-cards {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
             
             .filter-grid,
@@ -391,11 +475,26 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+            
+            .modal-content {
+                margin: 10% auto;
+                padding: 20px;
+                width: 95%;
+            }
         }
         
         @media (max-width: 480px) {
             .summary-cards {
                 grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+            
+            .tab {
+                font-size: 0.85em;
+                padding: 8px 12px;
             }
         }
     </style>
@@ -409,7 +508,7 @@
                 <p>Kelola pemasukan dan pengeluaran dengan mudah</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-primary" onclick="exportData()">📥 Export Data</button>
+                <button class="btn btn-primary" onclick="exportData()">📥 Export CSV</button>
                 <button class="btn btn-primary" onclick="window.location.reload()">🔄 Refresh</button>
             </div>
         </header>
@@ -417,22 +516,22 @@
         <!-- Summary Cards -->
         <div class="summary-cards" id="summaryCards">
             <div class="card income">
-                <h3>💰 Total Pemasukan SPJ</h3>
+                <h3>💰 Pemasukan SPJ</h3>
                 <div class="amount" id="totalIncomeSPJ">Rp 0</div>
                 <div class="sub-info" id="countIncomeSPJ">0 transaksi</div>
             </div>
             <div class="card income">
-                <h3>💰 Total Pemasukan Taktis</h3>
+                <h3>💰 Pemasukan Taktis</h3>
                 <div class="amount" id="totalIncomeTaktis">Rp 0</div>
                 <div class="sub-info" id="countIncomeTaktis">0 transaksi</div>
             </div>
             <div class="card expense">
-                <h3>💸 Total Pengeluaran SPJ</h3>
+                <h3>💸 Pengeluaran SPJ</h3>
                 <div class="amount" id="totalExpenseSPJ">Rp 0</div>
                 <div class="sub-info" id="countExpenseSPJ">0 transaksi</div>
             </div>
             <div class="card expense">
-                <h3>💸 Total Pengeluaran Taktis</h3>
+                <h3>💸 Pengeluaran Taktis</h3>
                 <div class="amount" id="totalExpenseTaktis">Rp 0</div>
                 <div class="sub-info" id="countExpenseTaktis">0 transaksi</div>
             </div>
@@ -462,7 +561,7 @@
         
         <!-- Filter Section -->
         <div class="filter-section" id="filterSection">
-            <h4 style="margin-bottom: 15px;">🔍 Filter Data</h4>
+            <h4 style="margin-bottom: 15px; color: #1f2937;">🔍 Filter Data</h4>
             <div class="filter-grid">
                 <div class="filter-group">
                     <label>Tanggal Mulai</label>
@@ -477,7 +576,7 @@
                     <input type="text" id="filterSearch" placeholder="Cari keterangan...">
                 </div>
                 <div class="filter-group">
-                    <label>Sort By</label>
+                    <label>Urutkan</label>
                     <select id="filterSort">
                         <option value="tanggal_desc">Tanggal Terbaru</option>
                         <option value="tanggal_asc">Tanggal Terlama</option>
@@ -487,14 +586,14 @@
                 </div>
             </div>
             <div class="filter-actions">
-                <button class="btn btn-primary" onclick="applyFilters()">Apply Filter</button>
-                <button class="btn btn-warning" onclick="resetFilters()">Reset Filter</button>
+                <button class="btn btn-primary" onclick="applyFilters()">🔍 Terapkan Filter</button>
+                <button class="btn btn-secondary" onclick="resetFilters()">↺ Reset</button>
             </div>
         </div>
         
         <!-- Form Section -->
         <div class="form-section" id="formSection">
-            <h2 id="formTitle">Tambah Pemasukan SPJ</h2>
+            <h2 id="formTitle" style="margin-bottom: 15px; color: #1f2937;">Tambah Pemasukan SPJ</h2>
             <form id="transactionForm">
                 <input type="hidden" id="formType" value="income">
                 <input type="hidden" id="formCategory" value="SPJ">
@@ -502,19 +601,19 @@
                 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="tanggal">Tanggal *</label>
+                        <label>Tanggal <span class="required">*</span></label>
                         <input type="date" id="tanggal" required>
                     </div>
                     <div class="form-group">
-                        <label for="nominal">Nominal (Rp) *</label>
+                        <label>Nominal (Rp) <span class="required">*</span></label>
                         <input type="number" id="nominal" placeholder="Masukkan nominal" required>
                     </div>
                     <div class="form-group">
-                        <label for="keterangan">Keterangan *</label>
+                        <label>Keterangan <span class="required">*</span></label>
                         <input type="text" id="keterangan" placeholder="Masukkan keterangan" required>
                     </div>
                     <div class="form-group" id="keteranganTambahanGroup">
-                        <label for="keteranganTambahan">Jenis Pembayaran</label>
+                        <label>Jenis Pembayaran</label>
                         <select id="keteranganTambahan">
                             <option value="Tunai">Tunai</option>
                             <option value="Non Tunai">Non Tunai</option>
@@ -523,8 +622,8 @@
                 </div>
                 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-success" id="submitBtn">Simpan</button>
-                    <button type="button" class="btn btn-warning" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Batal Edit</button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">💾 Simpan</button>
+                    <button type="button" class="btn btn-warning" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">↺ Batal Edit</button>
                 </div>
             </form>
         </div>
@@ -538,16 +637,16 @@
             <table>
                 <thead>
                     <tr>
-                        <th>No</th>
+                        <th style="width:50px;">No</th>
                         <th>Tanggal</th>
                         <th>Keterangan</th>
-                        <th>Nominal</th>
+                        <th style="text-align:right;">Nominal</th>
                         <th>Jenis Pembayaran</th>
-                        <th>Aksi</th>
+                        <th style="width:120px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <tr><td colspan="6" class="loading">Loading...</td></tr>
+                    <tr><td colspan="6" class="loading">⏳ Loading...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -555,7 +654,7 @@
         <!-- Rekap Section (hidden by default) -->
         <div id="rekapSection" class="hidden">
             <div class="form-section">
-                <h2>📊 Rekap Data</h2>
+                <h2 style="margin-bottom: 20px; color: #1f2937;">📊 Rekap Data</h2>
                 <div id="rekapContent"></div>
             </div>
         </div>
@@ -573,15 +672,15 @@
                     <input type="hidden" id="editCategory" value="">
                     
                     <div class="form-group" style="margin-bottom:15px;">
-                        <label>Tanggal</label>
+                        <label>Tanggal <span class="required">*</span></label>
                         <input type="date" id="editTanggal" required>
                     </div>
                     <div class="form-group" style="margin-bottom:15px;">
-                        <label>Keterangan</label>
+                        <label>Keterangan <span class="required">*</span></label>
                         <input type="text" id="editKeterangan" required>
                     </div>
                     <div class="form-group" style="margin-bottom:15px;">
-                        <label>Nominal</label>
+                        <label>Nominal <span class="required">*</span></label>
                         <input type="number" id="editNominal" required>
                     </div>
                     <div class="form-group" style="margin-bottom:15px;" id="editTambahanGroup">
@@ -593,30 +692,50 @@
                     </div>
                     
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-success">Update</button>
-                        <button type="button" class="btn btn-warning" onclick="closeEditModal()">Batal</button>
+                        <button type="submit" class="btn btn-success">💾 Update</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Batal</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
     
+    <!-- Connection Status -->
+    <div id="connectionStatus" class="checking">⏳ Checking...</div>
+    
     <script>
-        // Configuration
-        const API_URL = 'YOUR_DEPLOYED_SCRIPT_URL'; // Ganti dengan URL deploy Anda
+        // ============================================
+        // KONFIGURASI
+        // ============================================
+        // GANTI DENGAN URL DEPLOY ANDA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzxla7CQnYP9w7qKB99fvzKWBp-y_GlR0dQkF_F9id_hk57WWNhS1wbHL1kujaIZWd6VA/exec';
         
-        // State
+        // ============================================
+        // STATE
+        // ============================================
         let currentTab = 'incomeSPJ';
         let currentData = [];
         let isFiltered = false;
         
-        // Initialize
+        // ============================================
+        // INISIALISASI
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Aplikasi dimulai');
+            console.log('📡 API URL:', API_URL);
+            
+            // Test koneksi
+            testConnection();
+            
+            // Load data awal
             loadSummary();
             loadData('income', 'SPJ');
             setupEventListeners();
         });
         
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
         function setupEventListeners() {
             // Tab clicks
             document.querySelectorAll('.tab').forEach(tab => {
@@ -652,7 +771,18 @@
                 e.preventDefault();
                 updateData();
             });
+            
+            // Enter key untuk filter
+            document.getElementById('filterSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    applyFilters();
+                }
+            });
         }
+        
+        // ============================================
+        // FUNGSI UTAMA
+        // ============================================
         
         function switchTab(tab) {
             const [type, category] = tab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
@@ -671,7 +801,7 @@
                 tambahanGroup.style.display = 'none';
             }
             
-            // Reset filters when switching tab
+            // Reset filters
             resetFilters(false);
             
             // Load data
@@ -685,33 +815,83 @@
                 category: category
             });
             
-            // Add filter params if any
             if (params.startDate) urlParams.append('startDate', params.startDate);
             if (params.endDate) urlParams.append('endDate', params.endDate);
             if (params.search) urlParams.append('search', params.search);
             
             const url = `${API_URL}?${urlParams.toString()}`;
             
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">Loading...</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">⏳ Loading...</td></tr>';
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        currentData = result.data;
-                        renderTable(result.data);
-                    } else {
-                        console.error('Error:', result.error);
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            currentData = result.data || [];
+                            renderTable(currentData);
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch(e) {
+                        console.error('Parse error:', e);
+                        console.error('Response text:', text.substring(0, 200));
                         document.getElementById('tableBody').innerHTML = 
-                            '<tr><td colspan="6" class="empty-state">Error loading data</td></tr>';
+                            '<tr><td colspan="6" class="empty-state"><div class="icon">⚠️</div>Error: Invalid response from server</td></tr>';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('tableBody').innerHTML = 
-                        '<tr><td colspan="6" class="empty-state">Error loading data</td></tr>';
+                        `<tr><td colspan="6" class="empty-state"><div class="icon">❌</div>Error: ${error.message}</td></tr>`;
                 });
         }
+        
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            const info = document.getElementById('tableInfo');
+            
+            info.textContent = `Menampilkan ${data.length} data`;
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="icon">📭</div>
+                            <div>Tidak ada data</div>
+                            <div style="font-size: 0.85em; color: #9ca3af; margin-top: 5px;">Silakan tambahkan data baru</div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = data.map((item, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${formatDate(item.tanggal)}</td>
+                    <td>${escapeHtml(item.keterangan)}</td>
+                    <td style="text-align:right; font-weight:500;">Rp ${formatNumber(item.nominal)}</td>
+                    <td>${escapeHtml(item.keteranganTambahan || '-')}</td>
+                    <td>
+                        <div class="actions-cell">
+                            <button class="btn btn-warning btn-sm" onclick="openEditModal(${item.id})" title="Edit">✏️</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteData(${item.id})" title="Hapus">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // ============================================
+        // FILTER FUNCTIONS
+        // ============================================
         
         function applyFilters() {
             const startDate = document.getElementById('filterStartDate').value;
@@ -726,7 +906,6 @@
             if (endDate) params.endDate = endDate;
             if (search) params.search = search;
             
-            // Load filtered data
             const urlParams = new URLSearchParams({
                 action: 'getFilteredData',
                 type: type,
@@ -736,24 +915,33 @@
             
             const url = `${API_URL}?${urlParams.toString()}`;
             
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">Loading...</td></tr>';
+            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">⏳ Loading...</td></tr>';
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        currentData = result.data;
-                        // Apply sort
-                        if (sort) {
-                            currentData = sortData(currentData, sort);
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            currentData = result.data || [];
+                            // Apply sort
+                            if (sort) {
+                                currentData = sortData(currentData, sort);
+                            }
+                            renderTable(currentData);
+                            isFiltered = true;
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
                         }
-                        renderTable(currentData);
-                        isFiltered = true;
-                    } else {
-                        console.error('Error:', result.error);
+                    } catch(e) {
+                        console.error('Error:', e);
+                        alert('Error applying filters: ' + e.message);
                     }
                 })
-                .catch(error => console.error('Error:', error));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error: ' + error.message);
+                });
         }
         
         function resetFilters(loadData = true) {
@@ -785,41 +973,9 @@
             }
         }
         
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            const info = document.getElementById('tableInfo');
-            
-            info.textContent = `Menampilkan ${data.length} data`;
-            
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="empty-state">
-                            <div style="font-size: 3em; margin-bottom: 10px;">📭</div>
-                            <div>Tidak ada data</div>
-                            <div style="font-size: 0.9em; color: #999; margin-top: 5px;">Silakan tambahkan data baru</div>
-                        </td>
-                    </tr>
-                `;
-                return;
-            }
-            
-            tbody.innerHTML = data.map((item, index) => `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${formatDate(item.tanggal)}</td>
-                    <td>${item.keterangan}</td>
-                    <td>Rp ${formatNumber(item.nominal)}</td>
-                    <td>${item.keteranganTambahan || '-'}</td>
-                    <td>
-                        <div class="actions-cell">
-                            <button class="btn btn-warning btn-sm" onclick="openEditModal(${item.id})">✏️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteData(${item.id})">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
-        }
+        // ============================================
+        // CRUD FUNCTIONS
+        // ============================================
         
         function submitTransaction() {
             const type = document.getElementById('formType').value;
@@ -831,17 +987,16 @@
             const editRowId = document.getElementById('editRowId').value;
             
             if (!tanggal || !keterangan || !nominal) {
-                alert('Mohon lengkapi semua field yang wajib (ditandai *)');
+                alert('⚠️ Mohon lengkapi semua field yang wajib (ditandai *)');
                 return;
             }
             
             if (editRowId) {
-                // Update existing data
                 updateDataDirect(type, category, editRowId, tanggal, keterangan, nominal, keteranganTambahan);
                 return;
             }
             
-            let params = new URLSearchParams({
+            const params = new URLSearchParams({
                 action: type === 'income' ? 'addIncome' : 'addExpense',
                 category: category,
                 tanggal: tanggal,
@@ -856,41 +1011,57 @@
             const url = `${API_URL}?${params.toString()}`;
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        alert('Data berhasil disimpan!');
-                        document.getElementById('transactionForm').reset();
-                        loadSummary();
-                        const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-                        loadData(type, category);
-                    } else {
-                        alert('Error: ' + result.error);
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            alert('✅ Data berhasil disimpan!');
+                            document.getElementById('transactionForm').reset();
+                            loadSummary();
+                            const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
+                            loadData(type, category);
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch(e) {
+                        console.error('Error:', e);
+                        alert('❌ Error: ' + e.message);
                     }
                 })
                 .catch(error => {
-                    alert('Error: ' + error.message);
+                    console.error('Error:', error);
+                    alert('❌ Error: ' + error.message);
                 });
         }
         
         function deleteData(rowId) {
-            if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return;
+            if (!confirm('⚠️ Apakah Anda yakin ingin menghapus data ini?')) return;
             
             const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
             const url = `${API_URL}?action=deleteData&type=${type}&category=${category}&rowId=${rowId}`;
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        alert('Data berhasil dihapus!');
-                        loadSummary();
-                        loadData(type, category);
-                    } else {
-                        alert('Error: ' + result.error);
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            alert('✅ Data berhasil dihapus!');
+                            loadSummary();
+                            loadData(type, category);
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch(e) {
+                        console.error('Error:', e);
+                        alert('❌ Error: ' + e.message);
                     }
                 })
-                .catch(error => alert('Error: ' + error.message));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Error: ' + error.message);
+                });
         }
         
         function openEditModal(rowId) {
@@ -937,7 +1108,7 @@
         }
         
         function updateDataDirect(type, category, rowId, tanggal, keterangan, nominal, keteranganTambahan) {
-            let params = new URLSearchParams({
+            const params = new URLSearchParams({
                 action: 'updateData',
                 type: type,
                 category: category,
@@ -954,63 +1125,92 @@
             const url = `${API_URL}?${params.toString()}`;
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        alert('Data berhasil diupdate!');
-                        closeEditModal();
-                        loadSummary();
-                        loadData(type, category);
-                        cancelEdit();
-                    } else {
-                        alert('Error: ' + result.error);
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            alert('✅ Data berhasil diupdate!');
+                            closeEditModal();
+                            loadSummary();
+                            loadData(type, category);
+                            cancelEdit();
+                        } else {
+                            throw new Error(result.error || 'Unknown error');
+                        }
+                    } catch(e) {
+                        console.error('Error:', e);
+                        alert('❌ Error: ' + e.message);
                     }
                 })
-                .catch(error => alert('Error: ' + error.message));
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('❌ Error: ' + error.message);
+                });
         }
         
         function cancelEdit() {
             document.getElementById('editRowId').value = '';
-            document.getElementById('submitBtn').textContent = 'Simpan';
+            document.getElementById('submitBtn').textContent = '💾 Simpan';
             document.getElementById('cancelEditBtn').style.display = 'none';
             document.getElementById('transactionForm').reset();
         }
+        
+        // ============================================
+        // SUMMARY & REKAP
+        // ============================================
         
         function loadSummary() {
             const url = `${API_URL}?action=getSummary`;
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        const data = result.data;
-                        document.getElementById('totalIncomeSPJ').textContent = `Rp ${formatNumber(data.totalPemasukanSPJ)}`;
-                        document.getElementById('totalIncomeTaktis').textContent = `Rp ${formatNumber(data.totalPemasukanTaktis)}`;
-                        document.getElementById('totalExpenseSPJ').textContent = `Rp ${formatNumber(data.totalPengeluaranSPJ)}`;
-                        document.getElementById('totalExpenseTaktis').textContent = `Rp ${formatNumber(data.totalPengeluaranTaktis)}`;
-                        document.getElementById('saldoSPJ').textContent = `Rp ${formatNumber(data.saldoSPJ)}`;
-                        document.getElementById('saldoTaktis').textContent = `Rp ${formatNumber(data.saldoTaktis)}`;
-                        document.getElementById('totalBalance').textContent = `Rp ${formatNumber(data.saldoTotal)}`;
-                        document.getElementById('totalTransactions').textContent = `${data.jumlahTransaksi || 0} transaksi`;
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            const data = result.data;
+                            document.getElementById('totalIncomeSPJ').textContent = `Rp ${formatNumber(data.totalPemasukanSPJ || 0)}`;
+                            document.getElementById('totalIncomeTaktis').textContent = `Rp ${formatNumber(data.totalPemasukanTaktis || 0)}`;
+                            document.getElementById('totalExpenseSPJ').textContent = `Rp ${formatNumber(data.totalPengeluaranSPJ || 0)}`;
+                            document.getElementById('totalExpenseTaktis').textContent = `Rp ${formatNumber(data.totalPengeluaranTaktis || 0)}`;
+                            document.getElementById('saldoSPJ').textContent = `Rp ${formatNumber(data.saldoSPJ || 0)}`;
+                            document.getElementById('saldoTaktis').textContent = `Rp ${formatNumber(data.saldoTaktis || 0)}`;
+                            document.getElementById('totalBalance').textContent = `Rp ${formatNumber(data.saldoTotal || 0)}`;
+                            document.getElementById('totalTransactions').textContent = `${data.jumlahTransaksi || 0} transaksi`;
+                        }
+                    } catch(e) {
+                        console.error('Error parsing summary:', e);
                     }
                 })
-                .catch(error => console.error('Error loading summary:', error));
+                .catch(error => {
+                    console.error('Error loading summary:', error);
+                });
         }
         
         function loadRekap() {
             const url = `${API_URL}?action=getRekap`;
+            const content = document.getElementById('rekapContent');
+            content.innerHTML = '<div class="loading">⏳ Loading rekap data...</div>';
             
             fetch(url)
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        renderRekap(result.data);
-                    } else {
-                        document.getElementById('rekapContent').innerHTML = '<p>Error loading rekap data</p>';
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        const result = JSON.parse(text);
+                        if (result.success) {
+                            renderRekap(result.data);
+                        } else {
+                            content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>${result.error || 'Error loading rekap'}</div>`;
+                        }
+                    } catch(e) {
+                        console.error('Error:', e);
+                        content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Error: Invalid response</div>`;
                     }
                 })
                 .catch(error => {
-                    document.getElementById('rekapContent').innerHTML = '<p>Error: ' + error.message + '</p>';
+                    console.error('Error:', error);
+                    content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Error: ${error.message}</div>`;
                 });
         }
         
@@ -1022,21 +1222,21 @@
                 <div class="summary-cards" style="margin-bottom: 30px;">
                     <div class="card income">
                         <h3>Total Pemasukan</h3>
-                        <div class="amount">Rp ${formatNumber(data.total.pemasukan)}</div>
+                        <div class="amount">Rp ${formatNumber(data.total?.pemasukan || 0)}</div>
                     </div>
                     <div class="card expense">
                         <h3>Total Pengeluaran</h3>
-                        <div class="amount">Rp ${formatNumber(data.total.pengeluaran)}</div>
+                        <div class="amount">Rp ${formatNumber(data.total?.pengeluaran || 0)}</div>
                     </div>
                     <div class="card balance">
                         <h3>Saldo Akhir</h3>
-                        <div class="amount">Rp ${formatNumber(data.total.saldo)}</div>
+                        <div class="amount">Rp ${formatNumber(data.total?.saldo || 0)}</div>
                     </div>
                 </div>
             `;
             
             // Per Kategori
-            html += `<h3 style="margin-bottom: 15px;">📊 Rekap per Kategori</h3>`;
+            html += `<h3 style="margin-bottom: 15px; color: #1f2937;">📊 Rekap per Kategori</h3>`;
             html += `<div class="summary-cards" style="margin-bottom: 30px;">`;
             
             const categories = ['SPJ', 'Taktis'];
@@ -1044,7 +1244,7 @@
             
             types.forEach(type => {
                 categories.forEach(cat => {
-                    const amount = data.perKategori[type]?.[cat] || 0;
+                    const amount = data.perKategori?.[type]?.[cat] || 0;
                     const cardClass = type === 'Pemasukan' ? 'income' : 'expense';
                     html += `
                         <div class="card ${cardClass}">
@@ -1058,15 +1258,15 @@
             html += `</div>`;
             
             // Per Bulan
-            html += `<h3 style="margin-bottom: 15px;">📅 Rekap per Bulan</h3>`;
+            html += `<h3 style="margin-bottom: 15px; color: #1f2937;">📅 Rekap per Bulan</h3>`;
             html += `<div style="overflow-x: auto;">`;
             html += `<table>
                 <thead>
                     <tr>
                         <th>Bulan</th>
-                        <th>Pemasukan</th>
-                        <th>Pengeluaran</th>
-                        <th>Saldo</th>
+                        <th style="text-align:right;">Pemasukan</th>
+                        <th style="text-align:right;">Pengeluaran</th>
+                        <th style="text-align:right;">Saldo</th>
                         <th>Detail</th>
                     </tr>
                 </thead>
@@ -1074,19 +1274,19 @@
             
             const months = Object.keys(data.perBulan || {}).sort();
             if (months.length === 0) {
-                html += `<tr><td colspan="5" style="text-align:center;">Tidak ada data</td></tr>`;
+                html += `<tr><td colspan="5" style="text-align:center; padding:20px;">Tidak ada data</td></tr>`;
             } else {
                 months.forEach(month => {
                     const monthData = data.perBulan[month];
-                    const saldo = monthData.pemasukan - monthData.pengeluaran;
+                    const saldo = (monthData.pemasukan || 0) - (monthData.pengeluaran || 0);
                     const detail = [];
                     
-                    if (monthData.detail.Pemasukan) {
+                    if (monthData.detail?.Pemasukan) {
                         Object.keys(monthData.detail.Pemasukan).forEach(cat => {
                             detail.push(`Pemasukan ${cat}: Rp ${formatNumber(monthData.detail.Pemasukan[cat])}`);
                         });
                     }
-                    if (monthData.detail.Pengeluaran) {
+                    if (monthData.detail?.Pengeluaran) {
                         Object.keys(monthData.detail.Pengeluaran).forEach(cat => {
                             detail.push(`Pengeluaran ${cat}: Rp ${formatNumber(monthData.detail.Pengeluaran[cat])}`);
                         });
@@ -1098,13 +1298,13 @@
                     html += `
                         <tr>
                             <td><strong>${monthName} ${year}</strong></td>
-                            <td style="color: #10b981;">Rp ${formatNumber(monthData.pemasukan)}</td>
-                            <td style="color: #ef4444;">Rp ${formatNumber(monthData.pengeluaran)}</td>
-                            <td style="color: ${saldo >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
+                            <td style="text-align:right; color: #10b981;">Rp ${formatNumber(monthData.pemasukan || 0)}</td>
+                            <td style="text-align:right; color: #ef4444;">Rp ${formatNumber(monthData.pengeluaran || 0)}</td>
+                            <td style="text-align:right; color: ${saldo >= 0 ? '#10b981' : '#ef4444'}; font-weight: bold;">
                                 Rp ${formatNumber(saldo)}
                             </td>
-                            <td style="font-size: 0.9em;">
-                                ${detail.join('<br>')}
+                            <td style="font-size: 0.85em;">
+                                ${detail.join('<br>') || '-'}
                             </td>
                         </tr>
                     `;
@@ -1116,20 +1316,47 @@
             document.getElementById('rekapContent').innerHTML = html;
         }
         
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        function formatNumber(num) {
+            return new Intl.NumberFormat('id-ID').format(Math.round(num || 0));
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('id-ID', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch(e) {
+                return dateStr;
+            }
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
         function exportData() {
             if (!currentData || currentData.length === 0) {
                 alert('Tidak ada data untuk diexport');
                 return;
             }
             
-            // Create CSV
             let csv = 'No,Tanggal,Keterangan,Nominal,Jenis Pembayaran\n';
             currentData.forEach((item, index) => {
-                csv += `${index + 1},${formatDate(item.tanggal)},"${item.keterangan}",${item.nominal},"${item.keteranganTambahan || '-'}"\n`;
+                csv += `${index + 1},${formatDate(item.tanggal)},"${item.keterangan || ''}",${item.nominal || 0},"${item.keteranganTambahan || '-'}"\n`;
             });
             
-            // Download
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
@@ -1138,20 +1365,39 @@
             window.URL.revokeObjectURL(url);
         }
         
-        // Utility functions
-        function formatNumber(num) {
-            return new Intl.NumberFormat('id-ID').format(num);
+        // ============================================
+        // CONNECTION TEST
+        // ============================================
+        
+        function testConnection() {
+            const status = document.getElementById('connectionStatus');
+            status.textContent = '⏳ Checking...';
+            status.className = 'checking';
+            
+            fetch(`${API_URL}?action=getSummary`)
+                .then(response => response.text())
+                .then(text => {
+                    try {
+                        JSON.parse(text);
+                        status.textContent = '✅ Connected';
+                        status.className = 'connected';
+                    } catch(e) {
+                        status.textContent = '❌ API Error';
+                        status.className = 'error';
+                        status.title = 'Response: ' + text.substring(0, 100);
+                        console.error('API Response Error:', text.substring(0, 200));
+                    }
+                })
+                .catch(error => {
+                    status.textContent = '❌ Connection Error';
+                    status.className = 'error';
+                    status.title = error.message;
+                    console.error('Connection Error:', error);
+                });
         }
         
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('id-ID', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
-        }
+        // Test connection every 30 seconds
+        setInterval(testConnection, 30000);
         
         // Close modal on outside click
         window.onclick = function(event) {
@@ -1160,6 +1406,9 @@
                 closeEditModal();
             }
         }
+        
+        console.log('✅ Aplikasi siap digunakan!');
+        console.log('📌 Tips: Ganti API_URL dengan URL deploy Anda');
     </script>
 </body>
 </html>
