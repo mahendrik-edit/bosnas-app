@@ -6,7 +6,7 @@ const CONFIG = {
     // ==========================================
     // GOOGLE APPS SCRIPT WEB APP URL
     // ==========================================
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbyUxAgBBzzh2JDQGH0CJ_jxslpox2adqy5Uax90-umQuKnXWM7H2zhvNLewgNwmi9lugw/exec',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycbxu-nV9OhXGI4W_N6f7WRvjlYfYlHqpvQNEgUx1flXCHvOUoOHIFpJJJKVTaybwQK3_JQ/exec',
     
     // ==========================================
     // SPREADSHEET ID
