@@ -4,10 +4,14 @@
 
 const CONFIG = {
     // ==========================================
-    // GOOGLE APPS SCRIPT WEB APP URL
-    // GANTI DENGAN URL DARI DEPLOY ANDA!
+    // GOOGLE APPS SCRIPT WEB APP URL (BARU)
     // ==========================================
     webAppUrl: 'https://script.google.com/macros/s/AKfycby9YNXTpcLEckWRMz64-NKiDxqIFZfmErji305dPb9aizB5Cu4VzvauMTl9TJyX1UA5/exec',
+    
+    // ==========================================
+    // PROXY URL (Vercel Serverless Function)
+    // ==========================================
+    proxyUrl: '/api/proxy',
     
     // ==========================================
     // SPREADSHEET ID (Untuk READ via API)
@@ -22,7 +26,7 @@ const CONFIG = {
     // ==========================================
     // MODE APLIKASI
     // ==========================================
-    mode: 'full' // 'full' untuk CRUD, 'readonly' untuk baca saja
+    mode: 'full' // 'full' atau 'readonly'
 };
 
 // ============================================
