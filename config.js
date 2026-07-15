@@ -7,7 +7,7 @@ const CONFIG = {
     // GOOGLE APPS SCRIPT WEB APP URL
     // GANTI DENGAN URL DARI DEPLOY ANDA!
     // ==========================================
-    webAppUrl: 'https://script.google.com/macros/s/AKfycbxu-nV9OhXGI4W_N6f7WRvjlYfYlHqpvQNEgUx1flXCHvOUoOHIFpJJJKVTaybwQK3_JQ/exec',
+    webAppUrl: 'https://script.google.com/macros/s/AKfycby9YNXTpcLEckWRMz64-NKiDxqIFZfmErji305dPb9aizB5Cu4VzvauMTl9TJyX1UA5/exec',
     
     // ==========================================
     // SPREADSHEET ID (Untuk READ via API)
