@@ -5,25 +5,24 @@
 const CONFIG = {
     // ==========================================
     // GOOGLE APPS SCRIPT WEB APP URL
-    // (TIDAK DIGUNAKAN LAGI - HANYA CADANGAN)
+    // GANTI DENGAN URL DARI DEPLOY ANDA!
     // ==========================================
     webAppUrl: 'https://script.google.com/macros/s/AKfycbxu-nV9OhXGI4W_N6f7WRvjlYfYlHqpvQNEgUx1flXCHvOUoOHIFpJJJKVTaybwQK3_JQ/exec',
     
     // ==========================================
-    // SPREADSHEET ID
+    // SPREADSHEET ID (Untuk READ via API)
     // ==========================================
     spreadsheetId: '1UEamMydVptgCs1YnJIik5fVbFvZXgwY-mv5QyYOHqH4',
     
     // ==========================================
-    // API KEY - PASTIKAN SUDAH AKTIF
-    // Cara dapatkan: Google Cloud Console > Credentials > API Key
+    // API KEY (Untuk READ via API)
     // ==========================================
     apiKey: 'AIzaSyAiVL0pz7UD9qYnYTd6cmGey5zkUseTBNE',
     
     // ==========================================
     // MODE APLIKASI
     // ==========================================
-    mode: 'readonly' // 'readonly' atau 'full'
+    mode: 'full' // 'full' untuk CRUD, 'readonly' untuk baca saja
 };
 
 // ============================================
