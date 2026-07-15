@@ -1,5 +1,5 @@
 // ============================================
-// SCRIPT.JS - BOSNAS APP v3.0 (API KEY ONLY)
+// SCRIPT.JS - BOSNAS APP v3.0 (FULL VERSION)
 // ============================================
 
 let allData = [];
@@ -23,7 +23,8 @@ function truncateText(text, maxLength) {
 
 function updateLastUpdated() {
     const now = new Date();
-    document.getElementById('lastUpdated').textContent = '🕐 ' + now.toLocaleString('id-ID');
+    const el = document.getElementById('lastUpdated');
+    if (el) el.textContent = '🕐 ' + now.toLocaleString('id-ID');
 }
 
 // ============================================
@@ -31,27 +32,36 @@ function updateLastUpdated() {
 // ============================================
 
 function toggleMetode() {
-    const kategori = document.getElementById('formKategori').value;
-    const tipe = document.getElementById('formTipe').value;
+    const kategori = document.getElementById('formKategori');
+    const tipe = document.getElementById('formTipe');
     const metodeGroup = document.getElementById('metodeGroup');
     
-    if (kategori === 'SPJ' && tipe === 'Pengeluaran') {
+    if (!kategori || !tipe || !metodeGroup) return;
+    
+    if (kategori.value === 'SPJ' && tipe.value === 'Pengeluaran') {
         metodeGroup.style.display = 'block';
     } else {
         metodeGroup.style.display = 'none';
-        document.getElementById('formMetode').value = '';
+        const formMetode = document.getElementById('formMetode');
+        if (formMetode) formMetode.value = '';
     }
 }
 
 // ============================================
-// FETCH VIA API KEY (SATU-SATUNYA SUMBER)
+// CHECK MODE
+// ============================================
+
+function isReadOnly() {
+    return CONFIG.mode === 'readonly';
+}
+
+// ============================================
+// FETCH VIA API KEY
 // ============================================
 
 async function fetchDataViaAPI() {
     try {
         console.log('📡 Fetching data via API Key...');
-        console.log('Spreadsheet ID:', CONFIG.spreadsheetId);
-        console.log('API Key:', CONFIG.apiKey.substring(0, 10) + '...');
         
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.spreadsheetId}/values/MASTER_DATA!A:I?key=${CONFIG.apiKey}`;
         const response = await fetch(url);
@@ -62,21 +72,16 @@ async function fetchDataViaAPI() {
             const errorText = await response.text();
             console.error('API Error Response:', errorText);
             
-            // Parse error dari Google
             let errorMessage = `HTTP ${response.status}`;
             try {
                 const errorJson = JSON.parse(errorText);
                 errorMessage = errorJson.error?.message || errorMessage;
-            } catch (e) {
-                // Ignore
-            }
+            } catch (e) {}
             
             throw new Error(`API Error: ${errorMessage}`);
         }
         
         const result = await response.json();
-        console.log('API Result:', result);
-        
         const rows = result.values || [];
         
         if (rows.length < 2) {
@@ -84,7 +89,6 @@ async function fetchDataViaAPI() {
             return [];
         }
         
-        // Parse data
         const data = rows.slice(1).map((row, index) => ({
             id: row[0] || `AUTO-${index + 1}`,
             tanggal: row[1] || '',
@@ -102,20 +106,21 @@ async function fetchDataViaAPI() {
         
     } catch (error) {
         console.error('❌ API Key fetch error:', error);
-        throw error; // Lempar error agar ditangkap di loadData
+        throw error;
     }
 }
 
 // ============================================
-// LOAD DATA - HANYA API KEY
+// LOAD DATA
 // ============================================
 
 async function loadData() {
     const tbody = document.getElementById('tableBody');
-    tbody.innerHTML = '<tr><td colspan="10" class="loading">⏳ Loading data...</td></tr>';
+    if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="10" class="loading">⏳ Loading data...</td></tr>';
+    }
     
     try {
-        // HANYA PAKAI API KEY
         const data = await fetchDataViaAPI();
         
         if (!data || data.length === 0) {
@@ -130,25 +135,68 @@ async function loadData() {
         updateTable();
         updateChart();
         updateLastUpdated();
+        updateModeUI();
         
     } catch (error) {
         console.error('❌ Error:', error);
-        tbody.innerHTML = `
-            <tr><td colspan="10" style="color:red;text-align:center;padding:20px;">
-                <div style="font-size:24px;margin-bottom:10px;">❌</div>
-                <strong>${error.message}</strong>
-                <br><br>
-                <div style="text-align:left;max-width:500px;margin:0 auto;background:#f8f9fa;padding:15px;border-radius:8px;font-size:13px;color:#666;">
-                    <strong>💡 Solusi:</strong><br>
-                    1. Pastikan Google Sheets API sudah diaktifkan<br>
-                    2. Pastikan API Key valid dan memiliki akses ke spreadsheet<br>
-                    3. Pastikan sheet bernama <strong>MASTER_DATA</strong><br>
-                    4. Pastikan spreadsheet ID benar
-                </div>
-                <br>
-                <button onclick="loadData()" class="btn btn-refresh" style="padding:10px 30px;">🔄 Coba Lagi</button>
-            </td></tr>
-        `;
+        if (tbody) {
+            tbody.innerHTML = `
+                <tr><td colspan="10" style="color:red;text-align:center;padding:20px;">
+                    <div style="font-size:24px;margin-bottom:10px;">❌</div>
+                    <strong>${error.message}</strong>
+                    <br><br>
+                    <div style="text-align:left;max-width:500px;margin:0 auto;background:#f8f9fa;padding:15px;border-radius:8px;font-size:13px;color:#666;">
+                        <strong>💡 Solusi:</strong><br>
+                        1. Pastikan Google Sheets API sudah diaktifkan di Google Cloud Console<br>
+                        2. Pastikan API Key valid dan memiliki akses ke spreadsheet<br>
+                        3. Pastikan sheet bernama <strong>MASTER_DATA</strong><br>
+                        4. Pastikan spreadsheet ID benar di config.js
+                    </div>
+                    <br>
+                    <button onclick="loadData()" class="btn btn-refresh" style="padding:10px 30px;">🔄 Coba Lagi</button>
+                </td></tr>
+            `;
+        }
+    }
+}
+
+// ============================================
+// UPDATE MODE UI
+// ============================================
+
+function updateModeUI() {
+    const isReadOnlyMode = isReadOnly();
+    const btnAdd = document.getElementById('btnAdd');
+    const btnSave = document.getElementById('btnSave');
+    const modeBadge = document.getElementById('modeBadge');
+    const readonlyInfo = document.getElementById('readonlyInfo');
+    
+    if (btnAdd) {
+        btnAdd.disabled = isReadOnlyMode;
+        btnAdd.title = isReadOnlyMode ? 'Fitur dinonaktifkan (Read-Only)' : 'Tambah Transaksi';
+        btnAdd.style.opacity = isReadOnlyMode ? '0.5' : '1';
+        btnAdd.style.cursor = isReadOnlyMode ? 'not-allowed' : 'pointer';
+    }
+    
+    if (btnSave) {
+        btnSave.disabled = isReadOnlyMode;
+        btnSave.title = isReadOnlyMode ? 'Fitur dinonaktifkan (Read-Only)' : '';
+        btnSave.style.opacity = isReadOnlyMode ? '0.5' : '1';
+        btnSave.style.cursor = isReadOnlyMode ? 'not-allowed' : 'pointer';
+    }
+    
+    if (modeBadge) {
+        if (isReadOnlyMode) {
+            modeBadge.textContent = '🔒 Read-Only';
+            modeBadge.style.background = '#ef4444';
+        } else {
+            modeBadge.textContent = '📝 Full Access';
+            modeBadge.style.background = '#22c55e';
+        }
+    }
+    
+    if (readonlyInfo) {
+        readonlyInfo.style.display = isReadOnlyMode ? 'block' : 'none';
     }
 }
 
@@ -159,6 +207,7 @@ async function loadData() {
 function loadBulanDropdown() {
     const bulanSet = new Set(allData.map(d => d.bulan).filter(Boolean));
     const select = document.getElementById('filterBulan');
+    if (!select) return;
     
     while (select.options.length > 1) {
         select.remove(1);
@@ -184,7 +233,6 @@ function loadBulanDropdown() {
 function updateSummary() {
     const validData = allData.filter(d => d.kategori && d.tipe);
     
-    // SPJ
     const spjPemasukan = validData
         .filter(d => d.kategori === 'SPJ' && d.tipe === 'Pemasukan')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
@@ -193,7 +241,6 @@ function updateSummary() {
         .filter(d => d.kategori === 'SPJ' && d.tipe === 'Pengeluaran')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
     
-    // TAKTIS
     const taktisPemasukan = validData
         .filter(d => d.kategori === 'TAKTIS' && d.tipe === 'Pemasukan')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
@@ -202,22 +249,33 @@ function updateSummary() {
         .filter(d => d.kategori === 'TAKTIS' && d.tipe === 'Pengeluaran')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
     
-    // SALDO
     const saldoSPJ = spjPemasukan - spjPengeluaran;
     const saldoTAKTIS = taktisPemasukan - taktisPengeluaran;
     const totalSaldo = saldoSPJ + saldoTAKTIS;
     
-    document.getElementById('saldoSPJ').textContent = formatRupiah(saldoSPJ);
-    document.getElementById('saldoTAKTIS').textContent = formatRupiah(saldoTAKTIS);
-    document.getElementById('totalSaldo').textContent = formatRupiah(totalSaldo);
-    document.getElementById('totalTransaksi').textContent = allData.length.toLocaleString();
+    const elements = {
+        saldoSPJ: document.getElementById('saldoSPJ'),
+        saldoTAKTIS: document.getElementById('saldoTAKTIS'),
+        totalSaldo: document.getElementById('totalSaldo'),
+        totalTransaksi: document.getElementById('totalTransaksi'),
+        detailSPJ: document.getElementById('detailSPJ'),
+        detailTAKTIS: document.getElementById('detailTAKTIS'),
+        totalTunai: document.getElementById('totalTunai'),
+        totalNonTunai: document.getElementById('totalNonTunai')
+    };
     
-    document.getElementById('detailSPJ').textContent = 
-        `Pemasukan: ${formatRupiah(spjPemasukan)} | Pengeluaran: ${formatRupiah(spjPengeluaran)}`;
-    document.getElementById('detailTAKTIS').textContent = 
-        `Pemasukan: ${formatRupiah(taktisPemasukan)} | Pengeluaran: ${formatRupiah(taktisPengeluaran)}`;
+    if (elements.saldoSPJ) elements.saldoSPJ.textContent = formatRupiah(saldoSPJ);
+    if (elements.saldoTAKTIS) elements.saldoTAKTIS.textContent = formatRupiah(saldoTAKTIS);
+    if (elements.totalSaldo) elements.totalSaldo.textContent = formatRupiah(totalSaldo);
+    if (elements.totalTransaksi) elements.totalTransaksi.textContent = allData.length.toLocaleString();
     
-    // METODE SPJ
+    if (elements.detailSPJ) {
+        elements.detailSPJ.textContent = `Pemasukan: ${formatRupiah(spjPemasukan)} | Pengeluaran: ${formatRupiah(spjPengeluaran)}`;
+    }
+    if (elements.detailTAKTIS) {
+        elements.detailTAKTIS.textContent = `Pemasukan: ${formatRupiah(taktisPemasukan)} | Pengeluaran: ${formatRupiah(taktisPengeluaran)}`;
+    }
+    
     const tunai = validData
         .filter(d => d.kategori === 'SPJ' && d.tipe === 'Pengeluaran' && d.metode === 'Tunai')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
@@ -226,8 +284,8 @@ function updateSummary() {
         .filter(d => d.kategori === 'SPJ' && d.tipe === 'Pengeluaran' && d.metode === 'Non Tunai')
         .reduce((sum, d) => sum + (d.nominal || 0), 0);
     
-    document.getElementById('totalTunai').textContent = formatRupiah(tunai);
-    document.getElementById('totalNonTunai').textContent = formatRupiah(nonTunai);
+    if (elements.totalTunai) elements.totalTunai.textContent = formatRupiah(tunai);
+    if (elements.totalNonTunai) elements.totalNonTunai.textContent = formatRupiah(nonTunai);
 }
 
 // ============================================
@@ -235,14 +293,14 @@ function updateSummary() {
 // ============================================
 
 function filterData(data) {
-    const bulan = document.getElementById('filterBulan').value;
-    const kategori = document.getElementById('filterKategori').value;
-    const tipe = document.getElementById('filterTipe').value;
+    const bulan = document.getElementById('filterBulan');
+    const kategori = document.getElementById('filterKategori');
+    const tipe = document.getElementById('filterTipe');
     
     let filtered = data;
-    if (bulan) filtered = filtered.filter(d => d.bulan === bulan);
-    if (kategori) filtered = filtered.filter(d => d.kategori === kategori);
-    if (tipe) filtered = filtered.filter(d => d.tipe === tipe);
+    if (bulan && bulan.value) filtered = filtered.filter(d => d.bulan === bulan.value);
+    if (kategori && kategori.value) filtered = filtered.filter(d => d.kategori === kategori.value);
+    if (tipe && tipe.value) filtered = filtered.filter(d => d.tipe === tipe.value);
     
     return filtered;
 }
@@ -253,9 +311,14 @@ function applyFilters() {
 }
 
 function resetFilters() {
-    document.getElementById('filterBulan').value = '';
-    document.getElementById('filterKategori').value = '';
-    document.getElementById('filterTipe').value = '';
+    const bulan = document.getElementById('filterBulan');
+    const kategori = document.getElementById('filterKategori');
+    const tipe = document.getElementById('filterTipe');
+    
+    if (bulan) bulan.value = '';
+    if (kategori) kategori.value = '';
+    if (tipe) tipe.value = '';
+    
     currentPage = 1;
     updateTable();
 }
@@ -266,18 +329,22 @@ function resetFilters() {
 
 function updateTable(data = allData) {
     const tbody = document.getElementById('tableBody');
+    if (!tbody) return;
     
     const filtered = filterData(data);
     
     if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="10" class="loading">📭 Tidak ada data</td></tr>';
-        document.getElementById('totalRows').textContent = '0 data';
+        const totalRows = document.getElementById('totalRows');
+        if (totalRows) totalRows.textContent = '0 data';
         return;
     }
     
     const start = (currentPage - 1) * rowsPerPage;
     const end = start + rowsPerPage;
     const pageData = filtered.slice(start, end);
+    
+    const isReadOnlyMode = isReadOnly();
     
     tbody.innerHTML = pageData.map(row => {
         const statusClass = (row.status || 'Valid').toLowerCase();
@@ -298,14 +365,20 @@ function updateTable(data = allData) {
                 <td class="${isPemasukan ? 'text-green' : 'text-red'}">${formatRupiah(nominal)}</td>
                 <td><span class="badge-status ${statusClass}">${row.status || 'Valid'}</span></td>
                 <td>
-                    <button class="btn-action btn-edit" onclick="editTransaction('${row.id}')">✏️</button>
-                    <button class="btn-action btn-delete" onclick="deleteTransaction('${row.id}')">🗑️</button>
+                    ${isReadOnlyMode ? 
+                        '<span style="color:#999;font-size:12px;">🔒</span>' :
+                        `
+                        <button class="btn-action btn-edit" onclick="editTransaction('${row.id}')">✏️</button>
+                        <button class="btn-action btn-delete" onclick="deleteTransaction('${row.id}')">🗑️</button>
+                        `
+                    }
                 </td>
             </tr>
         `;
     }).join('');
     
-    document.getElementById('totalRows').textContent = `${filtered.length} data`;
+    const totalRows = document.getElementById('totalRows');
+    if (totalRows) totalRows.textContent = `${filtered.length} data`;
 }
 
 // ============================================
@@ -313,7 +386,10 @@ function updateTable(data = allData) {
 // ============================================
 
 function updateChart() {
-    const ctx = document.getElementById('chartBulanan').getContext('2d');
+    const canvas = document.getElementById('chartBulanan');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
     
     if (chartInstance) {
         chartInstance.destroy();
@@ -400,10 +476,15 @@ function updateChart() {
 }
 
 // ============================================
-// CRUD OPERATIONS (Masih via Web App - CORS tetap)
+// CRUD OPERATIONS (Hanya jika bukan Read-Only)
 // ============================================
 
 function showAddModal() {
+    if (isReadOnly()) {
+        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menambah data', 'info');
+        return;
+    }
+    
     document.getElementById('modalTitle').textContent = '➕ Tambah Transaksi';
     document.getElementById('editId').value = '';
     document.getElementById('transactionForm').reset();
@@ -413,6 +494,11 @@ function showAddModal() {
 }
 
 async function editTransaction(id) {
+    if (isReadOnly()) {
+        Swal.fire('Info', 'Mode Read-Only: Tidak dapat mengedit data', 'info');
+        return;
+    }
+    
     const row = allData.find(d => d.id === id);
     if (!row) {
         Swal.fire('Error', 'Data tidak ditemukan', 'error');
@@ -435,6 +521,11 @@ async function editTransaction(id) {
 
 async function saveTransaction(e) {
     e.preventDefault();
+    
+    if (isReadOnly()) {
+        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menyimpan data', 'info');
+        return;
+    }
     
     const id = document.getElementById('editId').value;
     const kategori = document.getElementById('formKategori').value;
@@ -462,7 +553,7 @@ async function saveTransaction(e) {
     btn.disabled = true;
     
     try {
-        // CORS akan error di sini!
+        // Coba via Web App (akan error CORS)
         const response = await fetch(CONFIG.webAppUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -480,7 +571,27 @@ async function saveTransaction(e) {
         }
     } catch (error) {
         console.error('Save error:', error);
-        Swal.fire('Error!', 'Gagal menyimpan data. CORS error.', 'error');
+        
+        // Tampilkan pesan yang lebih informatif
+        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+            Swal.fire({
+                title: '⚠️ CORS Error',
+                html: `
+                    <p>Tidak dapat menyimpan data karena <strong>CORS</strong>.</p>
+                    <br>
+                    <div style="text-align:left;font-size:13px;color:#666;">
+                        <strong>Solusi:</strong><br>
+                        1. Buka Google Sheets langsung untuk menambah/edit data<br>
+                        2. Atau deploy Web App dengan setting "Anyone"<br>
+                        3. Atau gunakan Vercel Serverless Function sebagai proxy
+                    </div>
+                `,
+                icon: 'warning',
+                confirmButtonText: 'OK'
+            });
+        } else {
+            Swal.fire('Error!', error.message, 'error');
+        }
     } finally {
         btn.textContent = '💾 Simpan';
         btn.disabled = false;
@@ -488,6 +599,11 @@ async function saveTransaction(e) {
 }
 
 async function deleteTransaction(id) {
+    if (isReadOnly()) {
+        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menghapus data', 'info');
+        return;
+    }
+    
     const result = await Swal.fire({
         title: 'Hapus Transaksi?',
         text: 'Data yang dihapus tidak dapat dikembalikan!',
@@ -527,7 +643,8 @@ async function deleteTransaction(id) {
 // ============================================
 
 function closeModal() {
-    document.getElementById('modal').classList.remove('active');
+    const modal = document.getElementById('modal');
+    if (modal) modal.classList.remove('active');
 }
 
 // ============================================
@@ -583,21 +700,22 @@ function refreshData() {
 }
 
 // ============================================
+// EVENT LISTENERS
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    }
+    
+    loadData();
+});
+
+// ============================================
 // AUTO REFRESH (5 menit)
 // ============================================
 
 setInterval(refreshData, 5 * 60 * 1000);
-
-// ============================================
-// EVENT LISTENERS
-// ============================================
-
-document.getElementById('modal').addEventListener('click', function(e) {
-    if (e.target === this) closeModal();
-});
-
-// ============================================
-// START
-// ============================================
-
-document.addEventListener('DOMContentLoaded', loadData);
