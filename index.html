@@ -1,15 +1,51 @@
 // ============================================
-// BACKEND GOOGLE APPS SCRIPT - VERSION 2.0
+// BACKEND BENDARAHA - VERSION 3.0
 // ============================================
 
 const SHEET_ID = '1UEamMydVptgCs1YnJIik5fVbFvZXgwY-mv5QyYOHqH4';
 
 function doGet(e) {
-  return handleRequest(e);
+  const output = ContentService
+    .createTextOutput()
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  output.setHeader('Access-Control-Allow-Origin', '*');
+  output.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  output.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const result = handleRequest(e);
+    output.setContent(JSON.stringify(result));
+    return output;
+  } catch(error) {
+    output.setContent(JSON.stringify({
+      success: false,
+      error: error.toString()
+    }));
+    return output;
+  }
 }
 
 function doPost(e) {
-  return handleRequest(e);
+  const output = ContentService
+    .createTextOutput()
+    .setMimeType(ContentService.MimeType.JSON);
+  
+  output.setHeader('Access-Control-Allow-Origin', '*');
+  output.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  output.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  
+  try {
+    const result = handleRequest(e);
+    output.setContent(JSON.stringify(result));
+    return output;
+  } catch(error) {
+    output.setContent(JSON.stringify({
+      success: false,
+      error: error.toString()
+    }));
+    return output;
+  }
 }
 
 function handleRequest(e) {
@@ -17,10 +53,10 @@ function handleRequest(e) {
     const action = e?.parameter?.action;
     
     if (!action) {
-      return createJSONResponse({
+      return {
         success: false,
         error: 'Parameter action diperlukan'
-      });
+      };
     }
     
     const sheet = SpreadsheetApp.openById(SHEET_ID);
@@ -70,454 +106,18 @@ function handleRequest(e) {
         };
     }
     
-    return createJSONResponse(result);
+    return result;
     
   } catch(error) {
-    return createJSONResponse({
+    return {
       success: false,
       error: error.toString()
-    });
+    };
   }
 }
 
 // ============================================
-// DASHBOARD FUNCTIONS
-// ============================================
-
-function getDashboard(sheet) {
-  const dashboard = {
-    totalPemasukan: 0,
-    totalPengeluaran: 0,
-    saldoTotal: 0,
-    trendPemasukan: 0,
-    trendPengeluaran: 0,
-    pemasukanSPJ: 0,
-    pemasukanTaktis: 0,
-    pengeluaranSPJ: 0,
-    pengeluaranTaktis: 0,
-    saldoSPJ: 0,
-    saldoTaktis: 0,
-    transaksiHariIni: [],
-    transaksiBulanIni: [],
-    topKategoriPemasukan: [],
-    topKategoriPengeluaran: [],
-    dailyData: [],
-    weeklyData: [],
-    monthlyData: []
-  };
-  
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  
-  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
-  
-  // Kumpulkan semua data
-  let allTransactions = [];
-  
-  sheetNames.forEach(name => {
-    const ws = sheet.getSheetByName(name);
-    if (ws) {
-      const rows = ws.getDataRange().getValues();
-      const type = name.split('_')[0];
-      const category = name.split('_')[1];
-      
-      rows.forEach((row, index) => {
-        if (index > 0 && row[0]) {
-          const date = new Date(row[0]);
-          const nominal = parseFloat(row[2]) || 0;
-          
-          const trans = {
-            tanggal: row[0],
-            date: date,
-            keterangan: row[1] || '',
-            nominal: nominal,
-            keteranganTambahan: row[3] || '',
-            type: type,
-            category: category
-          };
-          
-          allTransactions.push(trans);
-          
-          // Hitung total
-          if (type === 'Pemasukan') {
-            dashboard.totalPemasukan += nominal;
-            if (category === 'SPJ') dashboard.pemasukanSPJ += nominal;
-            else dashboard.pemasukanTaktis += nominal;
-          } else {
-            dashboard.totalPengeluaran += nominal;
-            if (category === 'SPJ') dashboard.pengeluaranSPJ += nominal;
-            else dashboard.pengeluaranTaktis += nominal;
-          }
-          
-          // Transaksi hari ini
-          if (date.toDateString() === today.toDateString()) {
-            dashboard.transaksiHariIni.push(trans);
-          }
-          
-          // Transaksi bulan ini
-          if (date >= startOfMonth) {
-            dashboard.transaksiBulanIni.push(trans);
-          }
-        }
-      });
-    }
-  });
-  
-  dashboard.saldoTotal = dashboard.totalPemasukan - dashboard.totalPengeluaran;
-  dashboard.saldoSPJ = dashboard.pemasukanSPJ - dashboard.pengeluaranSPJ;
-  dashboard.saldoTaktis = dashboard.pemasukanTaktis - dashboard.pengeluaranTaktis;
-  
-  // Hitung trend (perbandingan bulan lalu vs bulan ini)
-  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-  const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-  
-  let lastMonthPemasukan = 0;
-  let lastMonthPengeluaran = 0;
-  let thisMonthPemasukan = 0;
-  let thisMonthPengeluaran = 0;
-  
-  allTransactions.forEach(trans => {
-    if (trans.date >= lastMonthStart && trans.date <= lastMonthEnd) {
-      if (trans.type === 'Pemasukan') lastMonthPemasukan += trans.nominal;
-      else lastMonthPengeluaran += trans.nominal;
-    }
-    if (trans.date >= startOfMonth) {
-      if (trans.type === 'Pemasukan') thisMonthPemasukan += trans.nominal;
-      else thisMonthPengeluaran += trans.nominal;
-    }
-  });
-  
-  dashboard.trendPemasukan = lastMonthPemasukan > 0 
-    ? ((thisMonthPemasukan - lastMonthPemasukan) / lastMonthPemasukan * 100) 
-    : 0;
-  dashboard.trendPengeluaran = lastMonthPengeluaran > 0 
-    ? ((thisMonthPengeluaran - lastMonthPengeluaran) / lastMonthPengeluaran * 100) 
-    : 0;
-  
-  // Data untuk grafik (7 hari terakhir)
-  const dailyMap = {};
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().split('T')[0];
-    dailyMap[key] = { date: key, pemasukan: 0, pengeluaran: 0 };
-  }
-  
-  allTransactions.forEach(trans => {
-    const key = trans.date.toISOString().split('T')[0];
-    if (dailyMap[key]) {
-      if (trans.type === 'Pemasukan') dailyMap[key].pemasukan += trans.nominal;
-      else dailyMap[key].pengeluaran += trans.nominal;
-    }
-  });
-  
-  dashboard.dailyData = Object.values(dailyMap);
-  
-  // Data mingguan (4 minggu terakhir)
-  const weeklyMap = {};
-  for (let i = 3; i >= 0; i--) {
-    const weekStart = new Date(today);
-    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * i));
-    const key = weekStart.toISOString().split('T')[0];
-    weeklyMap[key] = { week: i + 1, pemasukan: 0, pengeluaran: 0 };
-  }
-  
-  allTransactions.forEach(trans => {
-    const weekNum = Math.floor((today - trans.date) / (7 * 24 * 60 * 60 * 1000));
-    if (weekNum >= 0 && weekNum < 4) {
-      const weekStart = new Date(today);
-      weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * weekNum));
-      const key = weekStart.toISOString().split('T')[0];
-      if (weeklyMap[key]) {
-        if (trans.type === 'Pemasukan') weeklyMap[key].pemasukan += trans.nominal;
-        else weeklyMap[key].pengeluaran += trans.nominal;
-      }
-    }
-  });
-  
-  dashboard.weeklyData = Object.values(weeklyMap);
-  
-  // Data bulanan (12 bulan terakhir)
-  const monthlyMap = {};
-  for (let i = 11; i >= 0; i--) {
-    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    monthlyMap[key] = { 
-      month: key, 
-      pemasukan: 0, 
-      pengeluaran: 0,
-      label: d.toLocaleString('id-ID', { month: 'short' }) + ' ' + d.getFullYear()
-    };
-  }
-  
-  allTransactions.forEach(trans => {
-    const key = `${trans.date.getFullYear()}-${String(trans.date.getMonth() + 1).padStart(2, '0')}`;
-    if (monthlyMap[key]) {
-      if (trans.type === 'Pemasukan') monthlyMap[key].pemasukan += trans.nominal;
-      else monthlyMap[key].pengeluaran += trans.nominal;
-    }
-  });
-  
-  dashboard.monthlyData = Object.values(monthlyMap);
-  
-  // Top kategori
-  const kategoriPemasukan = {};
-  const kategoriPengeluaran = {};
-  
-  allTransactions.forEach(trans => {
-    const key = `${trans.type}_${trans.category}`;
-    if (trans.type === 'Pemasukan') {
-      kategoriPemasukan[key] = (kategoriPemasukan[key] || 0) + trans.nominal;
-    } else {
-      kategoriPengeluaran[key] = (kategoriPengeluaran[key] || 0) + trans.nominal;
-    }
-  });
-  
-  dashboard.topKategoriPemasukan = Object.entries(kategoriPemasukan)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4)
-    .map(([key, value]) => ({ 
-      name: key.replace('_', ' '), 
-      value: value 
-    }));
-  
-  dashboard.topKategoriPengeluaran = Object.entries(kategoriPengeluaran)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 4)
-    .map(([key, value]) => ({ 
-      name: key.replace('_', ' '), 
-      value: value 
-    }));
-  
-  return {
-    success: true,
-    data: dashboard
-  };
-}
-
-function getMonthlyTrend(sheet, e) {
-  const months = parseInt(e?.parameter?.months) || 6;
-  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
-  const trend = [];
-  
-  const today = new Date();
-  for (let i = months - 1; i >= 0; i--) {
-    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
-    const monthData = {
-      month: monthKey,
-      label: monthDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-      pemasukan: 0,
-      pengeluaran: 0,
-      saldo: 0
-    };
-    
-    sheetNames.forEach(name => {
-      const ws = sheet.getSheetByName(name);
-      if (ws) {
-        const rows = ws.getDataRange().getValues();
-        const type = name.split('_')[0];
-        rows.forEach((row, index) => {
-          if (index > 0 && row[0]) {
-            const date = new Date(row[0]);
-            if (date.getMonth() === monthDate.getMonth() && 
-                date.getFullYear() === monthDate.getFullYear()) {
-              const nominal = parseFloat(row[2]) || 0;
-              if (type === 'Pemasukan') monthData.pemasukan += nominal;
-              else monthData.pengeluaran += nominal;
-            }
-          }
-        });
-      }
-    });
-    
-    monthData.saldo = monthData.pemasukan - monthData.pengeluaran;
-    trend.push(monthData);
-  }
-  
-  return {
-    success: true,
-    data: trend
-  };
-}
-
-function getAlerts(sheet) {
-  const alerts = [];
-  const summary = getSummary(sheet).data;
-  
-  // Alert saldo rendah
-  if (summary.saldoSPJ < 1000000) {
-    alerts.push({
-      type: 'warning',
-      title: '⚠️ Saldo SPJ Rendah',
-      message: `Saldo SPJ: Rp ${formatNumber(summary.saldoSPJ)} (di bawah Rp 1.000.000)`,
-      priority: 'high'
-    });
-  }
-  
-  if (summary.saldoTaktis < 1000000) {
-    alerts.push({
-      type: 'warning',
-      title: '⚠️ Saldo Taktis Rendah',
-      message: `Saldo Taktis: Rp ${formatNumber(summary.saldoTaktis)} (di bawah Rp 1.000.000)`,
-      priority: 'high'
-    });
-  }
-  
-  // Alert pengeluaran besar (di atas 5 juta)
-  const sheetNames = ['Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
-  const today = new Date();
-  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  
-  sheetNames.forEach(name => {
-    const ws = sheet.getSheetByName(name);
-    if (ws) {
-      const rows = ws.getDataRange().getValues();
-      rows.forEach((row, index) => {
-        if (index > 0 && row[0]) {
-          const date = new Date(row[0]);
-          const nominal = parseFloat(row[2]) || 0;
-          if (date >= startOfMonth && nominal > 5000000) {
-            alerts.push({
-              type: 'info',
-              title: '💸 Pengeluaran Besar',
-              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
-              date: row[0],
-              priority: 'medium'
-            });
-          }
-        }
-      });
-    }
-  });
-  
-  // Alert pemasukan besar (di atas 10 juta)
-  const incomeSheets = ['Pemasukan_SPJ', 'Pemasukan_Taktis'];
-  incomeSheets.forEach(name => {
-    const ws = sheet.getSheetByName(name);
-    if (ws) {
-      const rows = ws.getDataRange().getValues();
-      rows.forEach((row, index) => {
-        if (index > 0 && row[0]) {
-          const date = new Date(row[0]);
-          const nominal = parseFloat(row[2]) || 0;
-          if (date >= startOfMonth && nominal > 10000000) {
-            alerts.push({
-              type: 'success',
-              title: '✅ Pemasukan Besar',
-              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
-              date: row[0],
-              priority: 'medium'
-            });
-          }
-        }
-      });
-    }
-  });
-  
-  // Sort alerts by priority and date
-  alerts.sort((a, b) => {
-    const priority = { high: 0, medium: 1, low: 2 };
-    return (priority[a.priority] || 3) - (priority[b.priority] || 3);
-  });
-  
-  return {
-    success: true,
-    data: alerts.slice(0, 10) // Max 10 alerts
-  };
-}
-
-function getProjection(sheet) {
-  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
-  let totalPemasukan = 0;
-  let totalPengeluaran = 0;
-  let countPemasukan = 0;
-  let countPengeluaran = 0;
-  let monthlyData = [];
-  
-  // Kumpulkan data 6 bulan terakhir
-  const today = new Date();
-  for (let i = 5; i >= 0; i--) {
-    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
-    const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
-    const data = {
-      month: monthKey,
-      label: monthDate.toLocaleString('id-ID', { month: 'short' }),
-      pemasukan: 0,
-      pengeluaran: 0
-    };
-    
-    sheetNames.forEach(name => {
-      const ws = sheet.getSheetByName(name);
-      if (ws) {
-        const rows = ws.getDataRange().getValues();
-        const type = name.split('_')[0];
-        rows.forEach((row, index) => {
-          if (index > 0 && row[0]) {
-            const date = new Date(row[0]);
-            if (date.getMonth() === monthDate.getMonth() && 
-                date.getFullYear() === monthDate.getFullYear()) {
-              const nominal = parseFloat(row[2]) || 0;
-              if (type === 'Pemasukan') {
-                data.pemasukan += nominal;
-                totalPemasukan += nominal;
-                countPemasukan++;
-              } else {
-                data.pengeluaran += nominal;
-                totalPengeluaran += nominal;
-                countPengeluaran++;
-              }
-            }
-          }
-        });
-      }
-    });
-    
-    monthlyData.push(data);
-  }
-  
-  // Hitung rata-rata
-  const avgPemasukan = countPemasukan > 0 ? totalPemasukan / countPemasukan : 0;
-  const avgPengeluaran = countPengeluaran > 0 ? totalPengeluaran / countPengeluaran : 0;
-  
-  // Proyeksi 3 bulan ke depan
-  const projection = [];
-  const currentSaldo = totalPemasukan - totalPengeluaran;
-  
-  for (let i = 1; i <= 3; i++) {
-    const projDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
-    const projPemasukan = avgPemasukan * (1 + (i * 0.05)); // Asumsi growth 5% per bulan
-    const projPengeluaran = avgPengeluaran * (1 + (i * 0.03)); // Asumsi growth 3% per bulan
-    const projSaldo = currentSaldo + (projPemasukan - projPengeluaran) * i;
-    
-    projection.push({
-      bulan: projDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
-      pemasukan: Math.round(projPemasukan),
-      pengeluaran: Math.round(projPengeluaran),
-      saldo: Math.round(projSaldo)
-    });
-  }
-  
-  return {
-    success: true,
-    data: {
-      monthlyData: monthlyData,
-      projection: projection,
-      avgPemasukan: Math.round(avgPemasukan),
-      avgPengeluaran: Math.round(avgPengeluaran),
-      currentSaldo: Math.round(currentSaldo),
-      recommendation: currentSaldo < 5000000 ? 
-        '💡 Saran: Sisihkan Rp 5.000.000 untuk dana darurat' :
-        '💡 Saran: Kondisi keuangan sehat, pertahankan!'
-    }
-  };
-}
-
-// ============================================
-// FUNGSI UTAMA (Existing)
+// FUNGSI CRUD
 // ============================================
 
 function getData(sheet, e) {
@@ -609,6 +209,123 @@ function getFilteredData(sheet, e) {
     data: data
   };
 }
+
+function addIncome(sheet, e) {
+  const category = e.parameter.category;
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  
+  if (!category || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Semua field harus diisi'
+    };
+  }
+  
+  const sheetName = `Pemasukan_${category}`;
+  const ws = getOrCreateSheet(sheet, sheetName);
+  ws.appendRow([tanggal, keterangan, nominal, '']);
+  
+  return {
+    success: true,
+    message: 'Pemasukan berhasil ditambahkan'
+  };
+}
+
+function addExpense(sheet, e) {
+  const category = e.parameter.category;
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+  
+  if (!category || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Semua field harus diisi'
+    };
+  }
+  
+  const sheetName = `Pengeluaran_${category}`;
+  const ws = getOrCreateSheet(sheet, sheetName);
+  ws.appendRow([tanggal, keterangan, nominal, keteranganTambahan]);
+  
+  return {
+    success: true,
+    message: 'Pengeluaran berhasil ditambahkan'
+  };
+}
+
+function deleteData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  const rowId = parseInt(e.parameter.rowId);
+  
+  if (!type || !category || !rowId) {
+    return {
+      success: false,
+      error: 'Parameter tidak lengkap'
+    };
+  }
+  
+  const sheetName = getSheetName(type, category);
+  const ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    return {
+      success: false,
+      error: 'Sheet tidak ditemukan'
+    };
+  }
+  
+  ws.deleteRow(rowId);
+  return {
+    success: true,
+    message: 'Data berhasil dihapus'
+  };
+}
+
+function updateData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  const rowId = parseInt(e.parameter.rowId);
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+  
+  if (!type || !category || !rowId || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Parameter tidak lengkap'
+    };
+  }
+  
+  const sheetName = getSheetName(type, category);
+  const ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    return {
+      success: false,
+      error: 'Sheet tidak ditemukan'
+    };
+  }
+  
+  ws.getRange(rowId, 1).setValue(tanggal);
+  ws.getRange(rowId, 2).setValue(keterangan);
+  ws.getRange(rowId, 3).setValue(nominal);
+  ws.getRange(rowId, 4).setValue(keteranganTambahan);
+  
+  return {
+    success: true,
+    message: 'Data berhasil diupdate'
+  };
+}
+
+// ============================================
+// FUNGSI SUMMARY & REKAP
+// ============================================
 
 function getSummary(sheet) {
   const summary = {
@@ -760,116 +477,396 @@ function getMonthlyData(sheet) {
   return sortedMonths;
 }
 
-function addIncome(sheet, e) {
-  const category = e.parameter.category;
-  const tanggal = e.parameter.tanggal;
-  const keterangan = e.parameter.keterangan;
-  const nominal = parseFloat(e.parameter.nominal);
+// ============================================
+// FUNGSI DASHBOARD
+// ============================================
+
+function getDashboard(sheet) {
+  const dashboard = {
+    totalPemasukan: 0,
+    totalPengeluaran: 0,
+    saldoTotal: 0,
+    trendPemasukan: 0,
+    trendPengeluaran: 0,
+    pemasukanSPJ: 0,
+    pemasukanTaktis: 0,
+    pengeluaranSPJ: 0,
+    pengeluaranTaktis: 0,
+    saldoSPJ: 0,
+    saldoTaktis: 0,
+    transaksiHariIni: [],
+    transaksiBulanIni: [],
+    dailyData: [],
+    weeklyData: [],
+    monthlyData: []
+  };
   
-  if (!category || !tanggal || !keterangan || !nominal) {
-    return {
-      success: false,
-      error: 'Semua field harus diisi'
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  let allTransactions = [];
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      const type = name.split('_')[0];
+      const category = name.split('_')[1];
+      
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          
+          const trans = {
+            tanggal: row[0],
+            date: date,
+            keterangan: row[1] || '',
+            nominal: nominal,
+            keteranganTambahan: row[3] || '',
+            type: type,
+            category: category
+          };
+          
+          allTransactions.push(trans);
+          
+          if (type === 'Pemasukan') {
+            dashboard.totalPemasukan += nominal;
+            if (category === 'SPJ') dashboard.pemasukanSPJ += nominal;
+            else dashboard.pemasukanTaktis += nominal;
+          } else {
+            dashboard.totalPengeluaran += nominal;
+            if (category === 'SPJ') dashboard.pengeluaranSPJ += nominal;
+            else dashboard.pengeluaranTaktis += nominal;
+          }
+          
+          if (date.toDateString() === today.toDateString()) {
+            dashboard.transaksiHariIni.push(trans);
+          }
+          
+          if (date >= startOfMonth) {
+            dashboard.transaksiBulanIni.push(trans);
+          }
+        }
+      });
+    }
+  });
+  
+  dashboard.saldoTotal = dashboard.totalPemasukan - dashboard.totalPengeluaran;
+  dashboard.saldoSPJ = dashboard.pemasukanSPJ - dashboard.pengeluaranSPJ;
+  dashboard.saldoTaktis = dashboard.pemasukanTaktis - dashboard.pengeluaranTaktis;
+  
+  // Trend
+  const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+  
+  let lastMonthPemasukan = 0;
+  let lastMonthPengeluaran = 0;
+  let thisMonthPemasukan = 0;
+  let thisMonthPengeluaran = 0;
+  
+  allTransactions.forEach(trans => {
+    if (trans.date >= lastMonthStart && trans.date <= lastMonthEnd) {
+      if (trans.type === 'Pemasukan') lastMonthPemasukan += trans.nominal;
+      else lastMonthPengeluaran += trans.nominal;
+    }
+    if (trans.date >= startOfMonth) {
+      if (trans.type === 'Pemasukan') thisMonthPemasukan += trans.nominal;
+      else thisMonthPengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.trendPemasukan = lastMonthPemasukan > 0 
+    ? ((thisMonthPemasukan - lastMonthPemasukan) / lastMonthPemasukan * 100) 
+    : 0;
+  dashboard.trendPengeluaran = lastMonthPengeluaran > 0 
+    ? ((thisMonthPengeluaran - lastMonthPengeluaran) / lastMonthPengeluaran * 100) 
+    : 0;
+  
+  // Daily data
+  const dailyMap = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    dailyMap[key] = { date: key, pemasukan: 0, pengeluaran: 0 };
+  }
+  
+  allTransactions.forEach(trans => {
+    const key = trans.date.toISOString().split('T')[0];
+    if (dailyMap[key]) {
+      if (trans.type === 'Pemasukan') dailyMap[key].pemasukan += trans.nominal;
+      else dailyMap[key].pengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.dailyData = Object.values(dailyMap);
+  
+  // Weekly data
+  const weeklyMap = {};
+  for (let i = 3; i >= 0; i--) {
+    const weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * i));
+    const key = weekStart.toISOString().split('T')[0];
+    weeklyMap[key] = { week: i + 1, pemasukan: 0, pengeluaran: 0 };
+  }
+  
+  allTransactions.forEach(trans => {
+    const weekNum = Math.floor((today - trans.date) / (7 * 24 * 60 * 60 * 1000));
+    if (weekNum >= 0 && weekNum < 4) {
+      const weekStart = new Date(today);
+      weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * weekNum));
+      const key = weekStart.toISOString().split('T')[0];
+      if (weeklyMap[key]) {
+        if (trans.type === 'Pemasukan') weeklyMap[key].pemasukan += trans.nominal;
+        else weeklyMap[key].pengeluaran += trans.nominal;
+      }
+    }
+  });
+  
+  dashboard.weeklyData = Object.values(weeklyMap);
+  
+  // Monthly data
+  const monthlyMap = {};
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlyMap[key] = { 
+      month: key, 
+      pemasukan: 0, 
+      pengeluaran: 0,
+      label: d.toLocaleString('id-ID', { month: 'short' }) + ' ' + d.getFullYear()
     };
   }
   
-  const sheetName = `Pemasukan_${category}`;
-  const ws = getOrCreateSheet(sheet, sheetName);
-  ws.appendRow([tanggal, keterangan, nominal, '']);
+  allTransactions.forEach(trans => {
+    const key = `${trans.date.getFullYear()}-${String(trans.date.getMonth() + 1).padStart(2, '0')}`;
+    if (monthlyMap[key]) {
+      if (trans.type === 'Pemasukan') monthlyMap[key].pemasukan += trans.nominal;
+      else monthlyMap[key].pengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.monthlyData = Object.values(monthlyMap);
   
   return {
     success: true,
-    message: 'Pemasukan berhasil ditambahkan'
+    data: dashboard
   };
 }
 
-function addExpense(sheet, e) {
-  const category = e.parameter.category;
-  const tanggal = e.parameter.tanggal;
-  const keterangan = e.parameter.keterangan;
-  const nominal = parseFloat(e.parameter.nominal);
-  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+function getMonthlyTrend(sheet, e) {
+  const months = parseInt(e?.parameter?.months) || 6;
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  const trend = [];
   
-  if (!category || !tanggal || !keterangan || !nominal) {
-    return {
-      success: false,
-      error: 'Semua field harus diisi'
+  const today = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    const monthData = {
+      month: monthKey,
+      label: monthDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      pemasukan: 0,
+      pengeluaran: 0,
+      saldo: 0
     };
+    
+    sheetNames.forEach(name => {
+      const ws = sheet.getSheetByName(name);
+      if (ws) {
+        const rows = ws.getDataRange().getValues();
+        const type = name.split('_')[0];
+        rows.forEach((row, index) => {
+          if (index > 0 && row[0]) {
+            const date = new Date(row[0]);
+            if (date.getMonth() === monthDate.getMonth() && 
+                date.getFullYear() === monthDate.getFullYear()) {
+              const nominal = parseFloat(row[2]) || 0;
+              if (type === 'Pemasukan') monthData.pemasukan += nominal;
+              else monthData.pengeluaran += nominal;
+            }
+          }
+        });
+      }
+    });
+    
+    monthData.saldo = monthData.pemasukan - monthData.pengeluaran;
+    trend.push(monthData);
   }
-  
-  const sheetName = `Pengeluaran_${category}`;
-  const ws = getOrCreateSheet(sheet, sheetName);
-  ws.appendRow([tanggal, keterangan, nominal, keteranganTambahan]);
   
   return {
     success: true,
-    message: 'Pengeluaran berhasil ditambahkan'
+    data: trend
   };
 }
 
-function deleteData(sheet, e) {
-  const type = e.parameter.type;
-  const category = e.parameter.category;
-  const rowId = parseInt(e.parameter.rowId);
+function getAlerts(sheet) {
+  const alerts = [];
+  const summary = getSummary(sheet).data;
   
-  if (!type || !category || !rowId) {
-    return {
-      success: false,
-      error: 'Parameter tidak lengkap'
-    };
+  // Alert saldo rendah
+  if (summary.saldoSPJ < 1000000) {
+    alerts.push({
+      type: 'warning',
+      title: '⚠️ Saldo SPJ Rendah',
+      message: `Saldo SPJ: Rp ${formatNumber(summary.saldoSPJ)} (di bawah Rp 1.000.000)`,
+      priority: 'high'
+    });
   }
   
-  const sheetName = getSheetName(type, category);
-  const ws = sheet.getSheetByName(sheetName);
-  
-  if (!ws) {
-    return {
-      success: false,
-      error: 'Sheet tidak ditemukan'
-    };
+  if (summary.saldoTaktis < 1000000) {
+    alerts.push({
+      type: 'warning',
+      title: '⚠️ Saldo Taktis Rendah',
+      message: `Saldo Taktis: Rp ${formatNumber(summary.saldoTaktis)} (di bawah Rp 1.000.000)`,
+      priority: 'high'
+    });
   }
   
-  ws.deleteRow(rowId);
+  // Alert pengeluaran besar
+  const sheetNames = ['Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          if (date >= startOfMonth && nominal > 5000000) {
+            alerts.push({
+              type: 'info',
+              title: '💸 Pengeluaran Besar',
+              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
+              date: row[0],
+              priority: 'medium'
+            });
+          }
+        }
+      });
+    }
+  });
+  
+  // Alert pemasukan besar
+  const incomeSheets = ['Pemasukan_SPJ', 'Pemasukan_Taktis'];
+  incomeSheets.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          if (date >= startOfMonth && nominal > 10000000) {
+            alerts.push({
+              type: 'success',
+              title: '✅ Pemasukan Besar',
+              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
+              date: row[0],
+              priority: 'medium'
+            });
+          }
+        }
+      });
+    }
+  });
+  
+  alerts.sort((a, b) => {
+    const priority = { high: 0, medium: 1, low: 2 };
+    return (priority[a.priority] || 3) - (priority[b.priority] || 3);
+  });
+  
   return {
     success: true,
-    message: 'Data berhasil dihapus'
+    data: alerts.slice(0, 10)
   };
 }
 
-function updateData(sheet, e) {
-  const type = e.parameter.type;
-  const category = e.parameter.category;
-  const rowId = parseInt(e.parameter.rowId);
-  const tanggal = e.parameter.tanggal;
-  const keterangan = e.parameter.keterangan;
-  const nominal = parseFloat(e.parameter.nominal);
-  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+function getProjection(sheet) {
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  let totalPemasukan = 0;
+  let totalPengeluaran = 0;
+  let countPemasukan = 0;
+  let countPengeluaran = 0;
+  let monthlyData = [];
   
-  if (!type || !category || !rowId || !tanggal || !keterangan || !nominal) {
-    return {
-      success: false,
-      error: 'Parameter tidak lengkap'
+  const today = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const data = {
+      month: monthDate.toLocaleString('id-ID', { month: 'short' }),
+      pemasukan: 0,
+      pengeluaran: 0
     };
+    
+    sheetNames.forEach(name => {
+      const ws = sheet.getSheetByName(name);
+      if (ws) {
+        const rows = ws.getDataRange().getValues();
+        const type = name.split('_')[0];
+        rows.forEach((row, index) => {
+          if (index > 0 && row[0]) {
+            const date = new Date(row[0]);
+            if (date.getMonth() === monthDate.getMonth() && 
+                date.getFullYear() === monthDate.getFullYear()) {
+              const nominal = parseFloat(row[2]) || 0;
+              if (type === 'Pemasukan') {
+                data.pemasukan += nominal;
+                totalPemasukan += nominal;
+                countPemasukan++;
+              } else {
+                data.pengeluaran += nominal;
+                totalPengeluaran += nominal;
+                countPengeluaran++;
+              }
+            }
+          }
+        });
+      }
+    });
+    
+    monthlyData.push(data);
   }
   
-  const sheetName = getSheetName(type, category);
-  const ws = sheet.getSheetByName(sheetName);
+  const avgPemasukan = countPemasukan > 0 ? totalPemasukan / countPemasukan : 0;
+  const avgPengeluaran = countPengeluaran > 0 ? totalPengeluaran / countPengeluaran : 0;
   
-  if (!ws) {
-    return {
-      success: false,
-      error: 'Sheet tidak ditemukan'
-    };
+  const projection = [];
+  const currentSaldo = totalPemasukan - totalPengeluaran;
+  
+  for (let i = 1; i <= 3; i++) {
+    const projDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const projPemasukan = avgPemasukan * (1 + (i * 0.05));
+    const projPengeluaran = avgPengeluaran * (1 + (i * 0.03));
+    const projSaldo = currentSaldo + (projPemasukan - projPengeluaran) * i;
+    
+    projection.push({
+      bulan: projDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      pemasukan: Math.round(projPemasukan),
+      pengeluaran: Math.round(projPengeluaran),
+      saldo: Math.round(projSaldo)
+    });
   }
-  
-  ws.getRange(rowId, 1).setValue(tanggal);
-  ws.getRange(rowId, 2).setValue(keterangan);
-  ws.getRange(rowId, 3).setValue(nominal);
-  ws.getRange(rowId, 4).setValue(keteranganTambahan);
   
   return {
     success: true,
-    message: 'Data berhasil diupdate'
+    data: {
+      monthlyData: monthlyData,
+      projection: projection,
+      avgPemasukan: Math.round(avgPemasukan),
+      avgPengeluaran: Math.round(avgPengeluaran),
+      currentSaldo: Math.round(currentSaldo),
+      recommendation: currentSaldo < 5000000 ? 
+        '💡 Saran: Sisihkan Rp 5.000.000 untuk dana darurat' :
+        '💡 Saran: Kondisi keuangan sehat, pertahankan!'
+    }
   };
 }
 
@@ -898,12 +895,6 @@ function createSheet(sheet, sheetName) {
     ws.appendRow(['Tanggal', 'Keterangan', 'Nominal', 'Keterangan Tambahan']);
   }
   return ws;
-}
-
-function createJSONResponse(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
 }
 
 function formatNumber(num) {
