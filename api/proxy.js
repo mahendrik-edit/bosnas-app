@@ -4,32 +4,23 @@
 // ============================================
 
 export default async function handler(req, res) {
-    // ==========================================
-    // 1. SET CORS HEADERS
-    // ==========================================
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     
-    // ==========================================
-    // 2. HANDLE PREFLIGHT (OPTIONS)
-    // ==========================================
+    // Handle preflight (OPTIONS)
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
     
-    // ==========================================
-    // 3. GOOGLE APPS SCRIPT URL (YANG BARU DARI ANDA)
-    // ==========================================
+    // Google Apps Script URL
     const targetUrl = 'https://script.google.com/macros/s/AKfycby9YNXTpcLEckWRMz64-NKiDxqIFZfmErji305dPb9aizB5Cu4VzvauMTl9TJyX1UA5/exec';
     
     try {
         console.log('📡 Proxy: Forwarding to Google Apps Script');
         console.log('📡 Action:', req.body?.action);
         
-        // ==========================================
-        // 4. FORWARD REQUEST KE GOOGLE APPS SCRIPT
-        // ==========================================
         const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
@@ -38,15 +29,9 @@ export default async function handler(req, res) {
             body: JSON.stringify(req.body)
         });
         
-        // ==========================================
-        // 5. BACA RESPONSE
-        // ==========================================
         const data = await response.json();
         console.log('📡 Proxy Response:', data);
         
-        // ==========================================
-        // 6. KIRIM RESPONSE KEMBALI
-        // ==========================================
         res.status(response.status).json(data);
         
     } catch (error) {
@@ -57,10 +42,6 @@ export default async function handler(req, res) {
         });
     }
 }
-
-// ============================================
-// KONFIGURASI VERCEL
-// ============================================
 
 export const config = {
     api: {
