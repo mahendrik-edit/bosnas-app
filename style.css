@@ -66,6 +66,15 @@ header {
     font-weight: 600;
 }
 
+.badge-mode {
+    font-size: 11px;
+    padding: 2px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: #ef4444;
+    color: white;
+}
+
 .header-right {
     display: flex;
     align-items: center;
@@ -89,7 +98,7 @@ header {
 }
 
 .btn:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
@@ -439,6 +448,25 @@ table tr:hover td {
 }
 
 /* ============================================
+   READ-ONLY INFO
+   ============================================ */
+
+.readonly-info {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #92400e;
+    text-align: center;
+    display: none;
+}
+
+.readonly-info strong {
+    font-weight: 600;
+}
+
+/* ============================================
    MODAL
    ============================================ */
 
@@ -587,7 +615,7 @@ table tr:hover td {
 }
 
 .btn-save:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
 }
 
