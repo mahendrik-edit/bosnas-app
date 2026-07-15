@@ -3,20 +3,12 @@
 Sistem manajemen keuangan untuk BOSNAS (Bantuan Operasional Sekolah Nasional) tahun 2026.
 
 ## 🚀 Fitur
-- Dashboard ringkasan keuangan
+- Dashboard ringkasan keuangan (SPJ & Taktis)
 - Grafik pemasukan & pengeluaran
 - CRUD transaksi (Tambah, Edit, Hapus)
 - Filter berdasarkan bulan, kategori, dan tipe
 - Export data ke CSV
 - Responsive mobile
-
-## 🛠️ Teknologi
-- HTML + CSS + JavaScript (Vanilla)
-- Google Apps Script (Backend)
-- Google Sheets (Database)
-- Chart.js (Grafik)
-- SweetAlert2 (Alert)
-- Vercel (Hosting)
 
 ## 📁 Struktur Data
 - **MASTER_DATA**: Semua transaksi
@@ -24,10 +16,23 @@ Sistem manajemen keuangan untuk BOSNAS (Bantuan Operasional Sekolah Nasional) ta
 - **DASHBOARD**: Metrik dashboard
 
 ## 🔧 Setup
-1. Buat spreadsheet Google Sheets dengan struktur yang ditentukan
-2. Deploy Google Apps Script sebagai Web App
-3. Update `config.js` dengan URL Web App
-4. Deploy ke Vercel
+
+### 1. Spreadsheet
+Buat 3 sheet di Google Sheets:
+- `MASTER_DATA` (transaksi)
+- `REKAP_BULANAN` (rekap bulanan)
+- `DASHBOARD` (metrik)
+
+### 2. Google Apps Script
+1. Buka Spreadsheet → Extensions → Apps Script
+2. Paste kode dari `Code.gs`
+3. Deploy sebagai Web App
+4. Copy URL Web App
+
+### 3. Aplikasi
+1. Update `config.js` dengan URL Web App
+2. Upload ke GitHub
+3. Deploy ke Vercel
 
 ## 📞 Kontak
 [Your Name/Email]
