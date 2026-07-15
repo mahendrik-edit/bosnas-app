@@ -1,5 +1,5 @@
 // ============================================
-// SCRIPT.JS - BOSNAS APP v3.0
+// SCRIPT.JS - BOSNAS APP v3.0 (CORS FIX)
 // ============================================
 
 let allData = [];
@@ -8,7 +8,7 @@ let currentPage = 1;
 const rowsPerPage = 20;
 
 // ============================================
-// LOAD DATA
+// LOAD DATA - PAKAI API KEY (NO CORS)
 // ============================================
 
 async function loadData() {
@@ -16,14 +16,20 @@ async function loadData() {
     tbody.innerHTML = '<tr><td colspan="10" class="loading">⏳ Loading data...</td></tr>';
     
     try {
-        const response = await fetch(`${CONFIG.webAppUrl}?action=all`);
-        const result = await response.json();
+        // METHOD 1: Via API Key (NO CORS)
+        let data = await fetchDataViaAPI();
         
-        if (!result.success) {
-            throw new Error(result.error || 'Gagal memuat data');
+        // Jika API Key gagal, coba Web App
+        if (!data || data.length === 0) {
+            console.warn('API Key gagal, mencoba Web App...');
+            data = await fetchDataViaWebApp();
         }
         
-        allData = result.data || [];
+        if (!data || data.length === 0) {
+            throw new Error('Tidak ada data dari kedua sumber');
+        }
+        
+        allData = data;
         
         // Load bulan dropdown
         loadBulanDropdown();
@@ -39,8 +45,75 @@ async function loadData() {
         tbody.innerHTML = `
             <tr><td colspan="10" style="color:red;text-align:center;padding:20px;">
                 ❌ ${error.message}
+                <br><br>
+                <button onclick="loadData()" class="btn btn-refresh">🔄 Coba Lagi</button>
             </td></tr>
         `;
+    }
+}
+
+// ============================================
+// FETCH VIA API KEY (NO CORS - RECOMMENDED)
+// ============================================
+
+async function fetchDataViaAPI() {
+    try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.spreadsheetId}/values/MASTER_DATA!A:I?key=${CONFIG.apiKey}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        const rows = result.values || [];
+        
+        if (rows.length < 2) return [];
+        
+        // Header: ID, Tanggal, Bulan, Keterangan, Kategori, Tipe, Metode, Nominal, Status
+        const data = rows.slice(1).map(row => ({
+            id: row[0] || '',
+            tanggal: row[1] || '',
+            bulan: row[2] || '',
+            keterangan: row[3] || '',
+            kategori: row[4] || '',
+            tipe: row[5] || '',
+            metode: row[6] || '',
+            nominal: parseFloat(row[7]) || 0,
+            status: row[8] || 'Valid'
+        }));
+        
+        return data;
+        
+    } catch (error) {
+        console.error('API Key fetch error:', error);
+        return [];
+    }
+}
+
+// ============================================
+// FETCH VIA WEB APP (CORS - mungkin gagal)
+// ============================================
+
+async function fetchDataViaWebApp() {
+    try {
+        const response = await fetch(`${CONFIG.webAppUrl}?action=all`, {
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Web App Error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return result.data || [];
+        
+    } catch (error) {
+        console.error('Web App fetch error:', error);
+        return [];
     }
 }
 
@@ -48,38 +121,26 @@ async function loadData() {
 // LOAD BULAN DROPDOWN
 // ============================================
 
-async function loadBulanDropdown() {
-    try {
-        const response = await fetch(`${CONFIG.webAppUrl}?action=bulan`);
-        const result = await response.json();
-        
-        if (result.success) {
-            const select = document.getElementById('filterBulan');
-            // Clear existing options (keep first)
-            while (select.options.length > 1) {
-                select.remove(1);
-            }
-            result.data.forEach(bulan => {
-                const option = document.createElement('option');
-                option.value = bulan;
-                option.textContent = bulan;
-                select.appendChild(option);
-            });
-        }
-    } catch (error) {
-        // Fallback: gunakan bulan dari data
-        const bulanSet = new Set(allData.map(d => d.bulan));
-        const select = document.getElementById('filterBulan');
-        while (select.options.length > 1) {
-            select.remove(1);
-        }
-        bulanSet.forEach(bulan => {
+function loadBulanDropdown() {
+    const bulanSet = new Set(allData.map(d => d.bulan));
+    const select = document.getElementById('filterBulan');
+    
+    // Clear existing options (keep first)
+    while (select.options.length > 1) {
+        select.remove(1);
+    }
+    
+    const sortedBulan = ['Januari','Februari','Maret','April','Mei','Juni',
+                         'Juli','Agustus','September','Oktober','November','Desember'];
+    
+    sortedBulan.forEach(bulan => {
+        if (bulanSet.has(bulan)) {
             const option = document.createElement('option');
             option.value = bulan;
             option.textContent = bulan;
             select.appendChild(option);
-        });
-    }
+        }
+    });
 }
 
 // ============================================
@@ -91,7 +152,6 @@ function toggleMetode() {
     const tipe = document.getElementById('formTipe').value;
     const metodeGroup = document.getElementById('metodeGroup');
     
-    // Tampilkan hanya jika SPJ + Pengeluaran
     if (kategori === 'SPJ' && tipe === 'Pengeluaran') {
         metodeGroup.style.display = 'block';
     } else {
@@ -241,7 +301,6 @@ function updateChart() {
         chartInstance.destroy();
     }
     
-    // Group by bulan
     const bulanMap = {};
     allData.forEach(d => {
         if (!bulanMap[d.bulan]) {
@@ -254,7 +313,10 @@ function updateChart() {
         }
     });
     
-    const labels = Object.keys(bulanMap);
+    const sortedBulan = ['Januari','Februari','Maret','April','Mei','Juni',
+                         'Juli','Agustus','September','Oktober','November','Desember'];
+    
+    const labels = sortedBulan.filter(b => bulanMap[b]);
     const pemasukan = labels.map(b => bulanMap[b].pemasukan);
     const pengeluaran = labels.map(b => bulanMap[b].pengeluaran);
     const saldo = labels.map(b => bulanMap[b].pemasukan - bulanMap[b].pengeluaran);
@@ -320,7 +382,7 @@ function updateChart() {
 }
 
 // ============================================
-// CRUD OPERATIONS
+// CRUD OPERATIONS (via Web App)
 // ============================================
 
 function showAddModal() {
@@ -349,9 +411,7 @@ async function editTransaction(id) {
     document.getElementById('formStatus').value = row.status || 'Valid';
     document.getElementById('formMetode').value = row.metode || 'Tunai';
     
-    // Toggle metode
     toggleMetode();
-    
     document.getElementById('modal').classList.add('active');
 }
 
@@ -372,7 +432,6 @@ async function saveTransaction(e) {
         tahun: new Date().getFullYear()
     };
     
-    // Tambahkan metode hanya jika SPJ + Pengeluaran
     if (kategori === 'SPJ' && tipe === 'Pengeluaran') {
         data.metode = document.getElementById('formMetode').value;
     }
