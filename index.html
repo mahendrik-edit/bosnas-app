@@ -9,14 +9,12 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
-    <!-- ============================================ -->
     <!-- HEADER -->
-    <!-- ============================================ -->
     <header>
         <div class="header-left">
             <h1>📊 BOSNAS 2026</h1>
             <span class="badge">v3.0</span>
-            <span class="badge-mode" id="modeBadge">🔒 Read-Only</span>
+            <span class="badge-mode" id="modeBadge" style="background:#22c55e;">📝 Full Access</span>
         </div>
         <div class="header-right">
             <span id="lastUpdated">🔄 Loading...</span>
@@ -25,9 +23,7 @@
         </div>
     </header>
 
-    <!-- ============================================ -->
     <!-- DASHBOARD CARDS -->
-    <!-- ============================================ -->
     <section class="summary">
         <div class="card card-blue">
             <div class="card-icon">📘</div>
@@ -64,9 +60,7 @@
         </div>
     </section>
 
-    <!-- ============================================ -->
     <!-- RINCIAN METODE SPJ -->
-    <!-- ============================================ -->
     <section class="metode-section">
         <h3>📋 Rincian Pengeluaran SPJ</h3>
         <div class="metode-grid">
@@ -81,9 +75,7 @@
         </div>
     </section>
 
-    <!-- ============================================ -->
     <!-- FILTER -->
-    <!-- ============================================ -->
     <section class="filter-section">
         <div class="filter-group">
             <label>Bulan:</label>
@@ -110,9 +102,7 @@
         <button onclick="resetFilters()" class="btn-reset">↺ Reset</button>
     </section>
 
-    <!-- ============================================ -->
     <!-- CHART -->
-    <!-- ============================================ -->
     <section class="chart-section">
         <div class="chart-header">
             <h2>📊 Grafik Bulanan</h2>
@@ -125,9 +115,7 @@
         <canvas id="chartBulanan"></canvas>
     </section>
 
-    <!-- ============================================ -->
     <!-- TABEL TRANSAKSI -->
-    <!-- ============================================ -->
     <section class="table-section">
         <div class="table-header">
             <h2>📋 Daftar Transaksi</h2>
@@ -157,16 +145,9 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Info Mode Read-Only -->
-        <div class="readonly-info" id="readonlyInfo">
-            <span>🔒 Mode <strong>Read-Only</strong> - Untuk menambah/edit data, buka Google Sheets langsung</span>
-        </div>
     </section>
 
-    <!-- ============================================ -->
-    <!-- MODAL TAMBAH / EDIT -->
-    <!-- ============================================ -->
+    <!-- MODAL -->
     <div id="modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
