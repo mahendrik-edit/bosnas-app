@@ -1,0 +1,13 @@
+{
+  "name": "bosnas-app",
+  "version": "3.0.0",
+  "description": "BOSNAS 2026 - Sistem Manajemen Keuangan",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}
