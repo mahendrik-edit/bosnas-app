@@ -1,879 +1,919 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Bendahara</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f2f5;
-            color: #333;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        header h1 { font-size: 2em; }
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .btn-primary { background: white; color: #667eea; }
-        .btn-primary:hover { background: #f0f2f5; transform: translateY(-2px); }
-        .btn-success { background: #10b981; color: white; }
-        .btn-success:hover { background: #059669; transform: translateY(-2px); }
-        .btn-danger { background: #ef4444; color: white; }
-        .btn-danger:hover { background: #dc2626; transform: translateY(-2px); }
-        .btn-warning { background: #f59e0b; color: white; }
-        .btn-warning:hover { background: #d97706; transform: translateY(-2px); }
-        .btn-secondary { background: #6b7280; color: white; }
-        .btn-secondary:hover { background: #4b5563; transform: translateY(-2px); }
-        .btn-sm { padding: 5px 10px; font-size: 0.8em; }
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-        .card h3 { font-size: 0.8em; color: #6b7280; margin-bottom: 5px; }
-        .card .amount { font-size: 1.3em; font-weight: bold; }
-        .card .sub-info { font-size: 0.7em; color: #9ca3af; margin-top: 3px; }
-        .card.income .amount { color: #10b981; }
-        .card.expense .amount { color: #ef4444; }
-        .card.balance .amount { color: #3b82f6; }
-        .card.info .amount { color: #8b5cf6; }
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .tab {
-            padding: 10px 20px;
-            background: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-        .tab:hover { background: #e5e7eb; transform: translateY(-2px); }
-        .tab.active { background: #667eea; color: white; }
-        .filter-section, .form-section, .table-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .filter-group { display: flex; flex-direction: column; }
-        .filter-group label { font-size: 0.85em; font-weight: 600; margin-bottom: 5px; color: #6b7280; }
-        .filter-group input, .filter-group select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            font-size: 0.95em;
-        }
-        .filter-group input:focus, .filter-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .filter-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-        }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group label { font-weight: 600; margin-bottom: 5px; font-size: 0.85em; color: #4b5563; }
-        .form-group label .required { color: #ef4444; }
-        .form-group input, .form-group select {
-            padding: 10px;
-            border: 1px solid #d1d5db;
-            border-radius: 5px;
-            font-size: 1em;
-        }
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        .form-actions { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .table-header h3 { font-size: 1.1em; color: #1f2937; }
-        .table-info { font-size: 0.85em; color: #6b7280; }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #f8f9fa;
-            padding: 10px;
-            text-align: left;
-            border-bottom: 2px solid #e5e7eb;
-            font-weight: 600;
-            font-size: 0.85em;
-            color: #4b5563;
-        }
-        td { padding: 10px; border-bottom: 1px solid #e5e7eb; font-size: 0.9em; }
-        tr:hover { background: #f8f9fa; }
-        .actions-cell { display: flex; gap: 5px; flex-wrap: wrap; }
-        .hidden { display: none !important; }
-        .loading { text-align: center; padding: 40px; color: #6b7280; }
-        .empty-state { text-align: center; padding: 40px; color: #9ca3af; }
-        .empty-state .icon { font-size: 3em; margin-bottom: 10px; }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .modal-header h2 { font-size: 1.3em; color: #1f2937; }
-        .close { font-size: 1.5em; cursor: pointer; color: #9ca3af; }
-        .close:hover { color: #1f2937; }
-        #connectionStatus {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            z-index: 9999;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-        #connectionStatus.connected { background: #10b981; color: white; }
-        #connectionStatus.error { background: #ef4444; color: white; }
-        #connectionStatus.checking { background: #f59e0b; color: white; }
-        @media (max-width: 768px) {
-            .summary-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .filter-grid, .form-grid { grid-template-columns: 1fr; }
-            header { flex-direction: column; text-align: center; gap: 15px; }
-            .table-header { flex-direction: column; align-items: flex-start; }
-            .modal-content { margin: 10% auto; padding: 20px; width: 95%; }
-        }
-        @media (max-width: 480px) {
-            .summary-cards { grid-template-columns: 1fr; }
-            .tab { font-size: 0.85em; padding: 8px 12px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <div>
-                <h1>📊 Sistem Bendahara</h1>
-                <p>Kelola pemasukan dan pengeluaran</p>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-primary" onclick="exportData()">📥 Export</button>
-                <button class="btn btn-primary" onclick="window.location.reload()">🔄 Refresh</button>
-            </div>
-        </header>
-        
-        <div class="summary-cards" id="summaryCards">
-            <div class="card income"><h3>💰 Pemasukan SPJ</h3><div class="amount" id="totalIncomeSPJ">Rp 0</div></div>
-            <div class="card income"><h3>💰 Pemasukan Taktis</h3><div class="amount" id="totalIncomeTaktis">Rp 0</div></div>
-            <div class="card expense"><h3>💸 Pengeluaran SPJ</h3><div class="amount" id="totalExpenseSPJ">Rp 0</div></div>
-            <div class="card expense"><h3>💸 Pengeluaran Taktis</h3><div class="amount" id="totalExpenseTaktis">Rp 0</div></div>
-            <div class="card balance"><h3>💎 Saldo SPJ</h3><div class="amount" id="saldoSPJ">Rp 0</div></div>
-            <div class="card balance"><h3>💎 Saldo Taktis</h3><div class="amount" id="saldoTaktis">Rp 0</div></div>
-            <div class="card info"><h3>🏦 Saldo Total</h3><div class="amount" id="totalBalance">Rp 0</div></div>
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" data-tab="incomeSPJ">📈 Pemasukan SPJ</button>
-            <button class="tab" data-tab="incomeTaktis">📈 Pemasukan Taktis</button>
-            <button class="tab" data-tab="expenseSPJ">📉 Pengeluaran SPJ</button>
-            <button class="tab" data-tab="expenseTaktis">📉 Pengeluaran Taktis</button>
-            <button class="tab" data-tab="rekap">📊 Rekap</button>
-        </div>
-        
-        <div class="filter-section" id="filterSection">
-            <h4 style="margin-bottom:15px;color:#1f2937;">🔍 Filter Data</h4>
-            <div class="filter-grid">
-                <div class="filter-group"><label>Tanggal Mulai</label><input type="date" id="filterStartDate"></div>
-                <div class="filter-group"><label>Tanggal Akhir</label><input type="date" id="filterEndDate"></div>
-                <div class="filter-group"><label>Cari</label><input type="text" id="filterSearch" placeholder="Cari..."></div>
-                <div class="filter-group"><label>Urutkan</label>
-                    <select id="filterSort">
-                        <option value="tanggal_desc">Tanggal Terbaru</option>
-                        <option value="tanggal_asc">Tanggal Terlama</option>
-                        <option value="nominal_desc">Nominal Terbesar</option>
-                        <option value="nominal_asc">Nominal Terkecil</option>
-                    </select>
-                </div>
-            </div>
-            <div class="filter-actions">
-                <button class="btn btn-primary" onclick="applyFilters()">🔍 Terapkan</button>
-                <button class="btn btn-secondary" onclick="resetFilters()">↺ Reset</button>
-            </div>
-        </div>
-        
-        <div class="form-section" id="formSection">
-            <h2 id="formTitle" style="margin-bottom:15px;color:#1f2937;">Tambah Pemasukan SPJ</h2>
-            <form id="transactionForm">
-                <input type="hidden" id="formType" value="income">
-                <input type="hidden" id="formCategory" value="SPJ">
-                <input type="hidden" id="editRowId" value="">
-                <div class="form-grid">
-                    <div class="form-group"><label>Tanggal <span class="required">*</span></label><input type="date" id="tanggal" required></div>
-                    <div class="form-group"><label>Nominal (Rp) <span class="required">*</span></label><input type="number" id="nominal" placeholder="Masukkan nominal" required></div>
-                    <div class="form-group"><label>Keterangan <span class="required">*</span></label><input type="text" id="keterangan" placeholder="Masukkan keterangan" required></div>
-                    <div class="form-group" id="keteranganTambahanGroup"><label>Jenis Pembayaran</label>
-                        <select id="keteranganTambahan"><option value="Tunai">Tunai</option><option value="Non Tunai">Non Tunai</option></select>
-                    </div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-success" id="submitBtn">💾 Simpan</button>
-                    <button type="button" class="btn btn-warning" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">↺ Batal</button>
-                </div>
-            </form>
-        </div>
-        
-        <div class="table-container">
-            <div class="table-header">
-                <h3 id="tableTitle">Data Pemasukan SPJ</h3>
-                <div class="table-info" id="tableInfo">Menampilkan 0 data</div>
-            </div>
-            <table>
-                <thead><tr><th style="width:50px;">No</th><th>Tanggal</th><th>Keterangan</th><th style="text-align:right;">Nominal</th><th>Jenis</th><th style="width:120px;">Aksi</th></tr></thead>
-                <tbody id="tableBody"><tr><td colspan="6" class="loading">⏳ Loading...</td></tr></tbody>
-            </table>
-        </div>
-        
-        <div id="rekapSection" class="hidden">
-            <div class="form-section">
-                <h2 style="margin-bottom:20px;color:#1f2937;">📊 Rekap Data</h2>
-                <div id="rekapContent"></div>
-            </div>
-        </div>
-        
-        <div id="editModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header"><h2>✏️ Edit Data</h2><span class="close" onclick="closeEditModal()">&times;</span></div>
-                <form id="editForm">
-                    <input type="hidden" id="editId" value=""><input type="hidden" id="editType" value=""><input type="hidden" id="editCategory" value="">
-                    <div class="form-group" style="margin-bottom:15px;"><label>Tanggal <span class="required">*</span></label><input type="date" id="editTanggal" required></div>
-                    <div class="form-group" style="margin-bottom:15px;"><label>Keterangan <span class="required">*</span></label><input type="text" id="editKeterangan" required></div>
-                    <div class="form-group" style="margin-bottom:15px;"><label>Nominal <span class="required">*</span></label><input type="number" id="editNominal" required></div>
-                    <div class="form-group" style="margin-bottom:15px;" id="editTambahanGroup"><label>Jenis Pembayaran</label>
-                        <select id="editTambahan"><option value="Tunai">Tunai</option><option value="Non Tunai">Non Tunai</option></select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-success">💾 Update</button>
-                        <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Batal</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+// ============================================
+// BACKEND GOOGLE APPS SCRIPT - VERSION 2.0
+// ============================================
+
+const SHEET_ID = '1UEamMydVptgCs1YnJIik5fVbFvZXgwY-mv5QyYOHqH4';
+
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  try {
+    const action = e?.parameter?.action;
     
-    <div id="connectionStatus" class="checking">⏳ Checking...</div>
+    if (!action) {
+      return createJSONResponse({
+        success: false,
+        error: 'Parameter action diperlukan'
+      });
+    }
     
-    <script>
-        // ============================================
-        // KONFIGURASI - GANTI DENGAN URL DEPLOY ANDA
-        // ============================================
-        // URL DEPLOY YANG SUDAH ANDA DAPATKAN DARI GOOGLE APPS SCRIPT
-        const API_URL = 'https://script.google.com/macros/s/AKfycby9YNXTpcLEckWRMz64-NKiDxqIFZfmErji305dPb9aizB5Cu4VzvauMTl9TJyX1UA5/exec';
-        
-        // ============================================
-        // STATE
-        // ============================================
-        let currentTab = 'incomeSPJ';
-        let currentData = [];
-        
-        // ============================================
-        // INISIALISASI
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Aplikasi dimulai');
-            console.log('📡 API URL:', API_URL);
-            
-            // Test koneksi
-            testConnection();
-            
-            // Load data awal
-            loadSummary();
-            loadData('income', 'SPJ');
-            setupEventListeners();
+    const sheet = SpreadsheetApp.openById(SHEET_ID);
+    let result;
+    
+    switch(action) {
+      case 'getData':
+        result = getData(sheet, e);
+        break;
+      case 'addIncome':
+        result = addIncome(sheet, e);
+        break;
+      case 'addExpense':
+        result = addExpense(sheet, e);
+        break;
+      case 'getSummary':
+        result = getSummary(sheet);
+        break;
+      case 'getRekap':
+        result = getRekap(sheet);
+        break;
+      case 'getFilteredData':
+        result = getFilteredData(sheet, e);
+        break;
+      case 'deleteData':
+        result = deleteData(sheet, e);
+        break;
+      case 'updateData':
+        result = updateData(sheet, e);
+        break;
+      case 'getDashboard':
+        result = getDashboard(sheet);
+        break;
+      case 'getMonthlyTrend':
+        result = getMonthlyTrend(sheet, e);
+        break;
+      case 'getAlerts':
+        result = getAlerts(sheet);
+        break;
+      case 'getProjection':
+        result = getProjection(sheet);
+        break;
+      default:
+        result = {
+          success: false,
+          error: 'Aksi tidak ditemukan: ' + action
+        };
+    }
+    
+    return createJSONResponse(result);
+    
+  } catch(error) {
+    return createJSONResponse({
+      success: false,
+      error: error.toString()
+    });
+  }
+}
+
+// ============================================
+// DASHBOARD FUNCTIONS
+// ============================================
+
+function getDashboard(sheet) {
+  const dashboard = {
+    totalPemasukan: 0,
+    totalPengeluaran: 0,
+    saldoTotal: 0,
+    trendPemasukan: 0,
+    trendPengeluaran: 0,
+    pemasukanSPJ: 0,
+    pemasukanTaktis: 0,
+    pengeluaranSPJ: 0,
+    pengeluaranTaktis: 0,
+    saldoSPJ: 0,
+    saldoTaktis: 0,
+    transaksiHariIni: [],
+    transaksiBulanIni: [],
+    topKategoriPemasukan: [],
+    topKategoriPengeluaran: [],
+    dailyData: [],
+    weeklyData: [],
+    monthlyData: []
+  };
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  
+  // Kumpulkan semua data
+  let allTransactions = [];
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      const type = name.split('_')[0];
+      const category = name.split('_')[1];
+      
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          
+          const trans = {
+            tanggal: row[0],
+            date: date,
+            keterangan: row[1] || '',
+            nominal: nominal,
+            keteranganTambahan: row[3] || '',
+            type: type,
+            category: category
+          };
+          
+          allTransactions.push(trans);
+          
+          // Hitung total
+          if (type === 'Pemasukan') {
+            dashboard.totalPemasukan += nominal;
+            if (category === 'SPJ') dashboard.pemasukanSPJ += nominal;
+            else dashboard.pemasukanTaktis += nominal;
+          } else {
+            dashboard.totalPengeluaran += nominal;
+            if (category === 'SPJ') dashboard.pengeluaranSPJ += nominal;
+            else dashboard.pengeluaranTaktis += nominal;
+          }
+          
+          // Transaksi hari ini
+          if (date.toDateString() === today.toDateString()) {
+            dashboard.transaksiHariIni.push(trans);
+          }
+          
+          // Transaksi bulan ini
+          if (date >= startOfMonth) {
+            dashboard.transaksiBulanIni.push(trans);
+          }
+        }
+      });
+    }
+  });
+  
+  dashboard.saldoTotal = dashboard.totalPemasukan - dashboard.totalPengeluaran;
+  dashboard.saldoSPJ = dashboard.pemasukanSPJ - dashboard.pengeluaranSPJ;
+  dashboard.saldoTaktis = dashboard.pemasukanTaktis - dashboard.pengeluaranTaktis;
+  
+  // Hitung trend (perbandingan bulan lalu vs bulan ini)
+  const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const lastMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+  
+  let lastMonthPemasukan = 0;
+  let lastMonthPengeluaran = 0;
+  let thisMonthPemasukan = 0;
+  let thisMonthPengeluaran = 0;
+  
+  allTransactions.forEach(trans => {
+    if (trans.date >= lastMonthStart && trans.date <= lastMonthEnd) {
+      if (trans.type === 'Pemasukan') lastMonthPemasukan += trans.nominal;
+      else lastMonthPengeluaran += trans.nominal;
+    }
+    if (trans.date >= startOfMonth) {
+      if (trans.type === 'Pemasukan') thisMonthPemasukan += trans.nominal;
+      else thisMonthPengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.trendPemasukan = lastMonthPemasukan > 0 
+    ? ((thisMonthPemasukan - lastMonthPemasukan) / lastMonthPemasukan * 100) 
+    : 0;
+  dashboard.trendPengeluaran = lastMonthPengeluaran > 0 
+    ? ((thisMonthPengeluaran - lastMonthPengeluaran) / lastMonthPengeluaran * 100) 
+    : 0;
+  
+  // Data untuk grafik (7 hari terakhir)
+  const dailyMap = {};
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    dailyMap[key] = { date: key, pemasukan: 0, pengeluaran: 0 };
+  }
+  
+  allTransactions.forEach(trans => {
+    const key = trans.date.toISOString().split('T')[0];
+    if (dailyMap[key]) {
+      if (trans.type === 'Pemasukan') dailyMap[key].pemasukan += trans.nominal;
+      else dailyMap[key].pengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.dailyData = Object.values(dailyMap);
+  
+  // Data mingguan (4 minggu terakhir)
+  const weeklyMap = {};
+  for (let i = 3; i >= 0; i--) {
+    const weekStart = new Date(today);
+    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * i));
+    const key = weekStart.toISOString().split('T')[0];
+    weeklyMap[key] = { week: i + 1, pemasukan: 0, pengeluaran: 0 };
+  }
+  
+  allTransactions.forEach(trans => {
+    const weekNum = Math.floor((today - trans.date) / (7 * 24 * 60 * 60 * 1000));
+    if (weekNum >= 0 && weekNum < 4) {
+      const weekStart = new Date(today);
+      weekStart.setDate(weekStart.getDate() - (weekStart.getDay() + 7 * weekNum));
+      const key = weekStart.toISOString().split('T')[0];
+      if (weeklyMap[key]) {
+        if (trans.type === 'Pemasukan') weeklyMap[key].pemasukan += trans.nominal;
+        else weeklyMap[key].pengeluaran += trans.nominal;
+      }
+    }
+  });
+  
+  dashboard.weeklyData = Object.values(weeklyMap);
+  
+  // Data bulanan (12 bulan terakhir)
+  const monthlyMap = {};
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    monthlyMap[key] = { 
+      month: key, 
+      pemasukan: 0, 
+      pengeluaran: 0,
+      label: d.toLocaleString('id-ID', { month: 'short' }) + ' ' + d.getFullYear()
+    };
+  }
+  
+  allTransactions.forEach(trans => {
+    const key = `${trans.date.getFullYear()}-${String(trans.date.getMonth() + 1).padStart(2, '0')}`;
+    if (monthlyMap[key]) {
+      if (trans.type === 'Pemasukan') monthlyMap[key].pemasukan += trans.nominal;
+      else monthlyMap[key].pengeluaran += trans.nominal;
+    }
+  });
+  
+  dashboard.monthlyData = Object.values(monthlyMap);
+  
+  // Top kategori
+  const kategoriPemasukan = {};
+  const kategoriPengeluaran = {};
+  
+  allTransactions.forEach(trans => {
+    const key = `${trans.type}_${trans.category}`;
+    if (trans.type === 'Pemasukan') {
+      kategoriPemasukan[key] = (kategoriPemasukan[key] || 0) + trans.nominal;
+    } else {
+      kategoriPengeluaran[key] = (kategoriPengeluaran[key] || 0) + trans.nominal;
+    }
+  });
+  
+  dashboard.topKategoriPemasukan = Object.entries(kategoriPemasukan)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([key, value]) => ({ 
+      name: key.replace('_', ' '), 
+      value: value 
+    }));
+  
+  dashboard.topKategoriPengeluaran = Object.entries(kategoriPengeluaran)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([key, value]) => ({ 
+      name: key.replace('_', ' '), 
+      value: value 
+    }));
+  
+  return {
+    success: true,
+    data: dashboard
+  };
+}
+
+function getMonthlyTrend(sheet, e) {
+  const months = parseInt(e?.parameter?.months) || 6;
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  const trend = [];
+  
+  const today = new Date();
+  for (let i = months - 1; i >= 0; i--) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    const monthData = {
+      month: monthKey,
+      label: monthDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      pemasukan: 0,
+      pengeluaran: 0,
+      saldo: 0
+    };
+    
+    sheetNames.forEach(name => {
+      const ws = sheet.getSheetByName(name);
+      if (ws) {
+        const rows = ws.getDataRange().getValues();
+        const type = name.split('_')[0];
+        rows.forEach((row, index) => {
+          if (index > 0 && row[0]) {
+            const date = new Date(row[0]);
+            if (date.getMonth() === monthDate.getMonth() && 
+                date.getFullYear() === monthDate.getFullYear()) {
+              const nominal = parseFloat(row[2]) || 0;
+              if (type === 'Pemasukan') monthData.pemasukan += nominal;
+              else monthData.pengeluaran += nominal;
+            }
+          }
         });
-        
-        // ============================================
-        // EVENT LISTENERS
-        // ============================================
-        function setupEventListeners() {
-            document.querySelectorAll('.tab').forEach(tab => {
-                tab.addEventListener('click', function() {
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    currentTab = this.dataset.tab;
-                    
-                    if (currentTab === 'rekap') {
-                        document.getElementById('filterSection').classList.add('hidden');
-                        document.getElementById('formSection').classList.add('hidden');
-                        document.querySelector('.table-container').classList.add('hidden');
-                        document.getElementById('rekapSection').classList.remove('hidden');
-                        loadRekap();
-                    } else {
-                        document.getElementById('filterSection').classList.remove('hidden');
-                        document.getElementById('formSection').classList.remove('hidden');
-                        document.querySelector('.table-container').classList.remove('hidden');
-                        document.getElementById('rekapSection').classList.add('hidden');
-                        switchTab(currentTab);
-                    }
-                });
+      }
+    });
+    
+    monthData.saldo = monthData.pemasukan - monthData.pengeluaran;
+    trend.push(monthData);
+  }
+  
+  return {
+    success: true,
+    data: trend
+  };
+}
+
+function getAlerts(sheet) {
+  const alerts = [];
+  const summary = getSummary(sheet).data;
+  
+  // Alert saldo rendah
+  if (summary.saldoSPJ < 1000000) {
+    alerts.push({
+      type: 'warning',
+      title: '⚠️ Saldo SPJ Rendah',
+      message: `Saldo SPJ: Rp ${formatNumber(summary.saldoSPJ)} (di bawah Rp 1.000.000)`,
+      priority: 'high'
+    });
+  }
+  
+  if (summary.saldoTaktis < 1000000) {
+    alerts.push({
+      type: 'warning',
+      title: '⚠️ Saldo Taktis Rendah',
+      message: `Saldo Taktis: Rp ${formatNumber(summary.saldoTaktis)} (di bawah Rp 1.000.000)`,
+      priority: 'high'
+    });
+  }
+  
+  // Alert pengeluaran besar (di atas 5 juta)
+  const sheetNames = ['Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  const today = new Date();
+  const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          if (date >= startOfMonth && nominal > 5000000) {
+            alerts.push({
+              type: 'info',
+              title: '💸 Pengeluaran Besar',
+              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
+              date: row[0],
+              priority: 'medium'
             });
-            
-            document.getElementById('transactionForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                submitTransaction();
+          }
+        }
+      });
+    }
+  });
+  
+  // Alert pemasukan besar (di atas 10 juta)
+  const incomeSheets = ['Pemasukan_SPJ', 'Pemasukan_Taktis'];
+  incomeSheets.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const nominal = parseFloat(row[2]) || 0;
+          if (date >= startOfMonth && nominal > 10000000) {
+            alerts.push({
+              type: 'success',
+              title: '✅ Pemasukan Besar',
+              message: `${name.replace('_', ' ')}: Rp ${formatNumber(nominal)} - ${row[1] || ''}`,
+              date: row[0],
+              priority: 'medium'
             });
-            
-            document.getElementById('editForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                updateData();
-            });
-            
-            document.getElementById('filterSearch').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') applyFilters();
-            });
+          }
         }
-        
-        // ============================================
-        // FUNGSI UTAMA
-        // ============================================
-        function switchTab(tab) {
-            const [type, category] = tab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-            document.getElementById('formType').value = type;
-            document.getElementById('formCategory').value = category;
-            document.getElementById('formTitle').textContent = `Tambah ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'} ${category}`;
-            document.getElementById('tableTitle').textContent = `Data ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'} ${category}`;
-            
-            const tambahanGroup = document.getElementById('keteranganTambahanGroup');
-            if (type === 'expense' && category === 'SPJ') {
-                tambahanGroup.style.display = 'block';
-            } else {
-                tambahanGroup.style.display = 'none';
+      });
+    }
+  });
+  
+  // Sort alerts by priority and date
+  alerts.sort((a, b) => {
+    const priority = { high: 0, medium: 1, low: 2 };
+    return (priority[a.priority] || 3) - (priority[b.priority] || 3);
+  });
+  
+  return {
+    success: true,
+    data: alerts.slice(0, 10) // Max 10 alerts
+  };
+}
+
+function getProjection(sheet) {
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  let totalPemasukan = 0;
+  let totalPengeluaran = 0;
+  let countPemasukan = 0;
+  let countPengeluaran = 0;
+  let monthlyData = [];
+  
+  // Kumpulkan data 6 bulan terakhir
+  const today = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const monthDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const monthKey = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, '0')}`;
+    const data = {
+      month: monthKey,
+      label: monthDate.toLocaleString('id-ID', { month: 'short' }),
+      pemasukan: 0,
+      pengeluaran: 0
+    };
+    
+    sheetNames.forEach(name => {
+      const ws = sheet.getSheetByName(name);
+      if (ws) {
+        const rows = ws.getDataRange().getValues();
+        const type = name.split('_')[0];
+        rows.forEach((row, index) => {
+          if (index > 0 && row[0]) {
+            const date = new Date(row[0]);
+            if (date.getMonth() === monthDate.getMonth() && 
+                date.getFullYear() === monthDate.getFullYear()) {
+              const nominal = parseFloat(row[2]) || 0;
+              if (type === 'Pemasukan') {
+                data.pemasukan += nominal;
+                totalPemasukan += nominal;
+                countPemasukan++;
+              } else {
+                data.pengeluaran += nominal;
+                totalPengeluaran += nominal;
+                countPengeluaran++;
+              }
             }
-            
-            resetFilters(false);
-            loadData(type, category);
+          }
+        });
+      }
+    });
+    
+    monthlyData.push(data);
+  }
+  
+  // Hitung rata-rata
+  const avgPemasukan = countPemasukan > 0 ? totalPemasukan / countPemasukan : 0;
+  const avgPengeluaran = countPengeluaran > 0 ? totalPengeluaran / countPengeluaran : 0;
+  
+  // Proyeksi 3 bulan ke depan
+  const projection = [];
+  const currentSaldo = totalPemasukan - totalPengeluaran;
+  
+  for (let i = 1; i <= 3; i++) {
+    const projDate = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    const projPemasukan = avgPemasukan * (1 + (i * 0.05)); // Asumsi growth 5% per bulan
+    const projPengeluaran = avgPengeluaran * (1 + (i * 0.03)); // Asumsi growth 3% per bulan
+    const projSaldo = currentSaldo + (projPemasukan - projPengeluaran) * i;
+    
+    projection.push({
+      bulan: projDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' }),
+      pemasukan: Math.round(projPemasukan),
+      pengeluaran: Math.round(projPengeluaran),
+      saldo: Math.round(projSaldo)
+    });
+  }
+  
+  return {
+    success: true,
+    data: {
+      monthlyData: monthlyData,
+      projection: projection,
+      avgPemasukan: Math.round(avgPemasukan),
+      avgPengeluaran: Math.round(avgPengeluaran),
+      currentSaldo: Math.round(currentSaldo),
+      recommendation: currentSaldo < 5000000 ? 
+        '💡 Saran: Sisihkan Rp 5.000.000 untuk dana darurat' :
+        '💡 Saran: Kondisi keuangan sehat, pertahankan!'
+    }
+  };
+}
+
+// ============================================
+// FUNGSI UTAMA (Existing)
+// ============================================
+
+function getData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  
+  if (!type || !category) {
+    return {
+      success: false,
+      error: 'Parameter type dan category diperlukan'
+    };
+  }
+  
+  const sheetName = getSheetName(type, category);
+  let ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    ws = createSheet(sheet, sheetName);
+    return {
+      success: true,
+      data: []
+    };
+  }
+  
+  const rows = ws.getDataRange().getValues();
+  const data = [];
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0]) {
+      data.push({
+        id: i,
+        tanggal: rows[i][0],
+        keterangan: rows[i][1] || '',
+        nominal: parseFloat(rows[i][2]) || 0,
+        keteranganTambahan: rows[i][3] || ''
+      });
+    }
+  }
+  
+  return {
+    success: true,
+    data: data
+  };
+}
+
+function getFilteredData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  const startDate = e.parameter.startDate;
+  const endDate = e.parameter.endDate;
+  const search = e.parameter.search || '';
+  
+  const sheetName = getSheetName(type, category);
+  const ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    return {
+      success: true,
+      data: []
+    };
+  }
+  
+  const rows = ws.getDataRange().getValues();
+  const data = [];
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0]) {
+      const tanggal = new Date(rows[i][0]);
+      const inDateRange = (!startDate || tanggal >= new Date(startDate)) && 
+                          (!endDate || tanggal <= new Date(endDate));
+      const matchesSearch = !search || 
+                           rows[i][1].toLowerCase().includes(search.toLowerCase()) ||
+                           (rows[i][3] && rows[i][3].toLowerCase().includes(search.toLowerCase()));
+      
+      if (inDateRange && matchesSearch) {
+        data.push({
+          id: i,
+          tanggal: rows[i][0],
+          keterangan: rows[i][1] || '',
+          nominal: parseFloat(rows[i][2]) || 0,
+          keteranganTambahan: rows[i][3] || ''
+        });
+      }
+    }
+  }
+  
+  return {
+    success: true,
+    data: data
+  };
+}
+
+function getSummary(sheet) {
+  const summary = {
+    totalPemasukanSPJ: 0,
+    totalPemasukanTaktis: 0,
+    totalPengeluaranSPJ: 0,
+    totalPengeluaranTaktis: 0,
+    saldoSPJ: 0,
+    saldoTaktis: 0,
+    saldoTotal: 0,
+    jumlahTransaksi: 0
+  };
+  
+  const sheets = [
+    { name: 'Pemasukan_SPJ', type: 'income', category: 'SPJ' },
+    { name: 'Pemasukan_Taktis', type: 'income', category: 'Taktis' },
+    { name: 'Pengeluaran_SPJ', type: 'expense', category: 'SPJ' },
+    { name: 'Pengeluaran_Taktis', type: 'expense', category: 'Taktis' }
+  ];
+  
+  sheets.forEach(({ name, type, category }) => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      let total = 0;
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0]) {
+          total += parseFloat(rows[i][2]) || 0;
+          summary.jumlahTransaksi++;
         }
-        
-        function loadData(type, category, params = {}) {
-            const urlParams = new URLSearchParams({
-                action: 'getData',
-                type: type,
-                category: category
-            });
-            if (params.startDate) urlParams.append('startDate', params.startDate);
-            if (params.endDate) urlParams.append('endDate', params.endDate);
-            if (params.search) urlParams.append('search', params.search);
-            
-            const url = `${API_URL}?${urlParams.toString()}`;
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">⏳ Loading...</td></tr>';
-            
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            currentData = result.data || [];
-                            renderTable(currentData);
-                        } else {
-                            throw new Error(result.error || 'Unknown error');
-                        }
-                    } catch(e) {
-                        console.error('Parse error:', e);
-                        console.error('Response:', text.substring(0, 200));
-                        document.getElementById('tableBody').innerHTML = 
-                            '<tr><td colspan="6" class="empty-state"><div class="icon">⚠️</div>Error: Periksa URL API</td></tr>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    document.getElementById('tableBody').innerHTML = 
-                        `<tr><td colspan="6" class="empty-state"><div class="icon">❌</div>Error: ${error.message}</td></tr>`;
-                });
+      }
+      
+      if (type === 'income') {
+        summary[`totalPemasukan${category}`] = total;
+      } else {
+        summary[`totalPengeluaran${category}`] = total;
+      }
+    }
+  });
+  
+  summary.saldoSPJ = summary.totalPemasukanSPJ - summary.totalPengeluaranSPJ;
+  summary.saldoTaktis = summary.totalPemasukanTaktis - summary.totalPengeluaranTaktis;
+  summary.saldoTotal = summary.saldoSPJ + summary.saldoTaktis;
+  
+  return {
+    success: true,
+    data: summary
+  };
+}
+
+function getRekap(sheet) {
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  const rekap = {
+    perKategori: {},
+    total: {
+      pemasukan: 0,
+      pengeluaran: 0,
+      saldo: 0
+    }
+  };
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      let total = 0;
+      const category = name.split('_')[1];
+      const type = name.split('_')[0];
+      
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          total += parseFloat(row[2]) || 0;
         }
-        
-        function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
-            document.getElementById('tableInfo').textContent = `Menampilkan ${data.length} data`;
-            
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="icon">📭</div>Tidak ada data</td></tr>`;
-                return;
-            }
-            
-            tbody.innerHTML = data.map((item, index) => `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${formatDate(item.tanggal)}</td>
-                    <td>${escapeHtml(item.keterangan)}</td>
-                    <td style="text-align:right;font-weight:500;">Rp ${formatNumber(item.nominal)}</td>
-                    <td>${escapeHtml(item.keteranganTambahan || '-')}</td>
-                    <td>
-                        <div class="actions-cell">
-                            <button class="btn btn-warning btn-sm" onclick="openEditModal(${item.id})">✏️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteData(${item.id})">🗑️</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+      });
+      
+      if (!rekap.perKategori[type]) {
+        rekap.perKategori[type] = {};
+      }
+      rekap.perKategori[type][category] = total;
+      
+      if (type === 'Pemasukan') {
+        rekap.total.pemasukan += total;
+      } else {
+        rekap.total.pengeluaran += total;
+      }
+    }
+  });
+  
+  rekap.total.saldo = rekap.total.pemasukan - rekap.total.pengeluaran;
+  
+  const monthlyData = getMonthlyData(sheet);
+  rekap.perBulan = monthlyData;
+  
+  return {
+    success: true,
+    data: rekap
+  };
+}
+
+function getMonthlyData(sheet) {
+  const months = {};
+  const sheetNames = ['Pemasukan_SPJ', 'Pemasukan_Taktis', 'Pengeluaran_SPJ', 'Pengeluaran_Taktis'];
+  
+  sheetNames.forEach(name => {
+    const ws = sheet.getSheetByName(name);
+    if (ws) {
+      const rows = ws.getDataRange().getValues();
+      const type = name.split('_')[0];
+      const category = name.split('_')[1];
+      
+      rows.forEach((row, index) => {
+        if (index > 0 && row[0]) {
+          const date = new Date(row[0]);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          
+          if (!months[monthKey]) {
+            months[monthKey] = {
+              pemasukan: 0,
+              pengeluaran: 0,
+              detail: {}
+            };
+          }
+          
+          if (!months[monthKey].detail[type]) {
+            months[monthKey].detail[type] = {};
+          }
+          if (!months[monthKey].detail[type][category]) {
+            months[monthKey].detail[type][category] = 0;
+          }
+          
+          const nominal = parseFloat(row[2]) || 0;
+          months[monthKey].detail[type][category] += nominal;
+          
+          if (type === 'Pemasukan') {
+            months[monthKey].pemasukan += nominal;
+          } else {
+            months[monthKey].pengeluaran += nominal;
+          }
         }
-        
-        // ============================================
-        // FILTER
-        // ============================================
-        function applyFilters() {
-            const startDate = document.getElementById('filterStartDate').value;
-            const endDate = document.getElementById('filterEndDate').value;
-            const search = document.getElementById('filterSearch').value;
-            const sort = document.getElementById('filterSort').value;
-            
-            const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-            const params = {};
-            if (startDate) params.startDate = startDate;
-            if (endDate) params.endDate = endDate;
-            if (search) params.search = search;
-            
-            const urlParams = new URLSearchParams({
-                action: 'getFilteredData',
-                type: type,
-                category: category,
-                ...params
-            });
-            
-            const url = `${API_URL}?${urlParams.toString()}`;
-            document.getElementById('tableBody').innerHTML = '<tr><td colspan="6" class="loading">⏳ Loading...</td></tr>';
-            
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            currentData = result.data || [];
-                            if (sort) currentData = sortData(currentData, sort);
-                            renderTable(currentData);
-                        } else {
-                            throw new Error(result.error || 'Unknown error');
-                        }
-                    } catch(e) {
-                        alert('Error: ' + e.message);
-                    }
-                })
-                .catch(error => alert('Error: ' + error.message));
-        }
-        
-        function resetFilters(loadData = true) {
-            document.getElementById('filterStartDate').value = '';
-            document.getElementById('filterEndDate').value = '';
-            document.getElementById('filterSearch').value = '';
-            document.getElementById('filterSort').value = 'tanggal_desc';
-            if (loadData) {
-                const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-                loadData(type, category);
-            }
-        }
-        
-        function sortData(data, sortType) {
-            const sorted = [...data];
-            switch(sortType) {
-                case 'tanggal_desc': return sorted.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-                case 'tanggal_asc': return sorted.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-                case 'nominal_desc': return sorted.sort((a, b) => b.nominal - a.nominal);
-                case 'nominal_asc': return sorted.sort((a, b) => a.nominal - b.nominal);
-                default: return sorted;
-            }
-        }
-        
-        // ============================================
-        // CRUD
-        // ============================================
-        function submitTransaction() {
-            const type = document.getElementById('formType').value;
-            const category = document.getElementById('formCategory').value;
-            const tanggal = document.getElementById('tanggal').value;
-            const keterangan = document.getElementById('keterangan').value;
-            const nominal = document.getElementById('nominal').value;
-            const keteranganTambahan = document.getElementById('keteranganTambahan').value;
-            const editRowId = document.getElementById('editRowId').value;
-            
-            if (!tanggal || !keterangan || !nominal) {
-                alert('⚠️ Mohon lengkapi semua field yang wajib (ditandai *)');
-                return;
-            }
-            
-            if (editRowId) {
-                updateDataDirect(type, category, editRowId, tanggal, keterangan, nominal, keteranganTambahan);
-                return;
-            }
-            
-            const params = new URLSearchParams({
-                action: type === 'income' ? 'addIncome' : 'addExpense',
-                category: category,
-                tanggal: tanggal,
-                keterangan: keterangan,
-                nominal: nominal
-            });
-            if (type === 'expense' && category === 'SPJ') {
-                params.append('keteranganTambahan', keteranganTambahan);
-            }
-            
-            const url = `${API_URL}?${params.toString()}`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            alert('✅ Data berhasil disimpan!');
-                            document.getElementById('transactionForm').reset();
-                            loadSummary();
-                            const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-                            loadData(type, category);
-                        } else {
-                            throw new Error(result.error || 'Unknown error');
-                        }
-                    } catch(e) {
-                        alert('❌ Error: ' + e.message);
-                    }
-                })
-                .catch(error => alert('❌ Error: ' + error.message));
-        }
-        
-        function deleteData(rowId) {
-            if (!confirm('⚠️ Yakin ingin menghapus data ini?')) return;
-            const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-            const url = `${API_URL}?action=deleteData&type=${type}&category=${category}&rowId=${rowId}`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            alert('✅ Data dihapus!');
-                            loadSummary();
-                            loadData(type, category);
-                        } else {
-                            throw new Error(result.error || 'Unknown error');
-                        }
-                    } catch(e) {
-                        alert('❌ Error: ' + e.message);
-                    }
-                })
-                .catch(error => alert('❌ Error: ' + error.message));
-        }
-        
-        function openEditModal(rowId) {
-            const [type, category] = currentTab.match(/(income|expense)(SPJ|Taktis)/).slice(1);
-            const item = currentData.find(d => d.id === rowId);
-            if (!item) { alert('Data tidak ditemukan'); return; }
-            
-            document.getElementById('editId').value = rowId;
-            document.getElementById('editType').value = type;
-            document.getElementById('editCategory').value = category;
-            document.getElementById('editTanggal').value = item.tanggal;
-            document.getElementById('editKeterangan').value = item.keterangan;
-            document.getElementById('editNominal').value = item.nominal;
-            document.getElementById('editTambahan').value = item.keteranganTambahan || 'Tunai';
-            
-            if (type === 'expense' && category === 'SPJ') {
-                document.getElementById('editTambahanGroup').style.display = 'block';
-            } else {
-                document.getElementById('editTambahanGroup').style.display = 'none';
-            }
-            
-            document.getElementById('editModal').style.display = 'block';
-        }
-        
-        function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
-        
-        function updateData() {
-            const rowId = document.getElementById('editId').value;
-            const type = document.getElementById('editType').value;
-            const category = document.getElementById('editCategory').value;
-            const tanggal = document.getElementById('editTanggal').value;
-            const keterangan = document.getElementById('editKeterangan').value;
-            const nominal = document.getElementById('editNominal').value;
-            const keteranganTambahan = document.getElementById('editTambahan').value;
-            updateDataDirect(type, category, rowId, tanggal, keterangan, nominal, keteranganTambahan);
-        }
-        
-        function updateDataDirect(type, category, rowId, tanggal, keterangan, nominal, keteranganTambahan) {
-            const params = new URLSearchParams({
-                action: 'updateData',
-                type: type,
-                category: category,
-                rowId: rowId,
-                tanggal: tanggal,
-                keterangan: keterangan,
-                nominal: nominal
-            });
-            if (type === 'expense' && category === 'SPJ') {
-                params.append('keteranganTambahan', keteranganTambahan);
-            }
-            
-            const url = `${API_URL}?${params.toString()}`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            alert('✅ Data diupdate!');
-                            closeEditModal();
-                            loadSummary();
-                            loadData(type, category);
-                            cancelEdit();
-                        } else {
-                            throw new Error(result.error || 'Unknown error');
-                        }
-                    } catch(e) {
-                        alert('❌ Error: ' + e.message);
-                    }
-                })
-                .catch(error => alert('❌ Error: ' + error.message));
-        }
-        
-        function cancelEdit() {
-            document.getElementById('editRowId').value = '';
-            document.getElementById('submitBtn').textContent = '💾 Simpan';
-            document.getElementById('cancelEditBtn').style.display = 'none';
-            document.getElementById('transactionForm').reset();
-        }
-        
-        // ============================================
-        // SUMMARY & REKAP
-        // ============================================
-        function loadSummary() {
-            const url = `${API_URL}?action=getSummary`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            const d = result.data;
-                            document.getElementById('totalIncomeSPJ').textContent = `Rp ${formatNumber(d.totalPemasukanSPJ || 0)}`;
-                            document.getElementById('totalIncomeTaktis').textContent = `Rp ${formatNumber(d.totalPemasukanTaktis || 0)}`;
-                            document.getElementById('totalExpenseSPJ').textContent = `Rp ${formatNumber(d.totalPengeluaranSPJ || 0)}`;
-                            document.getElementById('totalExpenseTaktis').textContent = `Rp ${formatNumber(d.totalPengeluaranTaktis || 0)}`;
-                            document.getElementById('saldoSPJ').textContent = `Rp ${formatNumber(d.saldoSPJ || 0)}`;
-                            document.getElementById('saldoTaktis').textContent = `Rp ${formatNumber(d.saldoTaktis || 0)}`;
-                            document.getElementById('totalBalance').textContent = `Rp ${formatNumber(d.saldoTotal || 0)}`;
-                        }
-                    } catch(e) { console.error('Summary error:', e); }
-                })
-                .catch(error => console.error('Summary error:', error));
-        }
-        
-        function loadRekap() {
-            const content = document.getElementById('rekapContent');
-            content.innerHTML = '<div class="loading">⏳ Loading rekap...</div>';
-            const url = `${API_URL}?action=getRekap`;
-            fetch(url)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        const result = JSON.parse(text);
-                        if (result.success) {
-                            renderRekap(result.data);
-                        } else {
-                            content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>${result.error || 'Error'}</div>`;
-                        }
-                    } catch(e) {
-                        content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Error: ${e.message}</div>`;
-                    }
-                })
-                .catch(error => {
-                    content.innerHTML = `<div class="empty-state"><div class="icon">❌</div>Error: ${error.message}</div>`;
-                });
-        }
-        
-        function renderRekap(data) {
-            let html = `
-                <div class="summary-cards" style="margin-bottom:30px;">
-                    <div class="card income"><h3>Total Pemasukan</h3><div class="amount">Rp ${formatNumber(data.total?.pemasukan || 0)}</div></div>
-                    <div class="card expense"><h3>Total Pengeluaran</h3><div class="amount">Rp ${formatNumber(data.total?.pengeluaran || 0)}</div></div>
-                    <div class="card balance"><h3>Saldo Akhir</h3><div class="amount">Rp ${formatNumber(data.total?.saldo || 0)}</div></div>
-                </div>
-                <h3 style="margin-bottom:15px;color:#1f2937;">📊 Rekap per Kategori</h3>
-                <div class="summary-cards" style="margin-bottom:30px;">`;
-            
-            ['SPJ', 'Taktis'].forEach(cat => {
-                ['Pemasukan', 'Pengeluaran'].forEach(type => {
-                    const amount = data.perKategori?.[type]?.[cat] || 0;
-                    const cls = type === 'Pemasukan' ? 'income' : 'expense';
-                    html += `<div class="card ${cls}"><h3>${type} ${cat}</h3><div class="amount">Rp ${formatNumber(amount)}</div></div>`;
-                });
-            });
-            
-            html += `</div><h3 style="margin-bottom:15px;color:#1f2937;">📅 Rekap per Bulan</h3><div style="overflow-x:auto;"><table>
-                <thead><tr><th>Bulan</th><th style="text-align:right;">Pemasukan</th><th style="text-align:right;">Pengeluaran</th><th style="text-align:right;">Saldo</th><th>Detail</th></tr></thead><tbody>`;
-            
-            const months = Object.keys(data.perBulan || {}).sort();
-            if (months.length === 0) {
-                html += `<tr><td colspan="5" style="text-align:center;padding:20px;">Tidak ada data</td></tr>`;
-            } else {
-                months.forEach(month => {
-                    const m = data.perBulan[month];
-                    const saldo = (m.pemasukan || 0) - (m.pengeluaran || 0);
-                    const [year, monthNum] = month.split('-');
-                    const monthName = new Date(year, monthNum - 1).toLocaleString('id-ID', { month: 'long' });
-                    const detail = [];
-                    if (m.detail?.Pemasukan) {
-                        Object.keys(m.detail.Pemasukan).forEach(cat => {
-                            detail.push(`Pemasukan ${cat}: Rp ${formatNumber(m.detail.Pemasukan[cat])}`);
-                        });
-                    }
-                    if (m.detail?.Pengeluaran) {
-                        Object.keys(m.detail.Pengeluaran).forEach(cat => {
-                            detail.push(`Pengeluaran ${cat}: Rp ${formatNumber(m.detail.Pengeluaran[cat])}`);
-                        });
-                    }
-                    html += `<tr>
-                        <td><strong>${monthName} ${year}</strong></td>
-                        <td style="text-align:right;color:#10b981;">Rp ${formatNumber(m.pemasukan || 0)}</td>
-                        <td style="text-align:right;color:#ef4444;">Rp ${formatNumber(m.pengeluaran || 0)}</td>
-                        <td style="text-align:right;color:${saldo >= 0 ? '#10b981' : '#ef4444'};font-weight:bold;">Rp ${formatNumber(saldo)}</td>
-                        <td style="font-size:0.85em;">${detail.join('<br>') || '-'}</td>
-                    </tr>`;
-                });
-            }
-            html += `</tbody></table></div>`;
-            document.getElementById('rekapContent').innerHTML = html;
-        }
-        
-        // ============================================
-        // UTILITY
-        // ============================================
-        function formatNumber(num) { return new Intl.NumberFormat('id-ID').format(Math.round(num || 0)); }
-        function formatDate(dateStr) {
-            if (!dateStr) return '-';
-            try {
-                const date = new Date(dateStr);
-                return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            } catch(e) { return dateStr; }
-        }
-        function escapeHtml(text) { if (!text) return ''; const d = document.createElement('div'); d.textContent = text; return d.innerHTML; }
-        
-        function exportData() {
-            if (!currentData || currentData.length === 0) { alert('Tidak ada data'); return; }
-            let csv = 'No,Tanggal,Keterangan,Nominal,Jenis Pembayaran\n';
-            currentData.forEach((item, index) => {
-                csv += `${index + 1},${formatDate(item.tanggal)},"${item.keterangan || ''}",${item.nominal || 0},"${item.keteranganTambahan || '-'}"\n`;
-            });
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `data_${currentTab}_${new Date().toISOString().slice(0,10)}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-        
-        // ============================================
-        // CONNECTION TEST
-        // ============================================
-        function testConnection() {
-            const status = document.getElementById('connectionStatus');
-            status.textContent = '⏳ Checking...';
-            status.className = 'checking';
-            fetch(`${API_URL}?action=getSummary`)
-                .then(response => response.text())
-                .then(text => {
-                    try {
-                        JSON.parse(text);
-                        status.textContent = '✅ Connected';
-                        status.className = 'connected';
-                    } catch(e) {
-                        status.textContent = '❌ API Error';
-                        status.className = 'error';
-                        status.title = text.substring(0, 100);
-                        console.error('API Error:', text.substring(0, 200));
-                    }
-                })
-                .catch(error => {
-                    status.textContent = '❌ Connection Error';
-                    status.className = 'error';
-                    status.title = error.message;
-                });
-        }
-        setInterval(testConnection, 30000);
-        
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('editModal')) closeEditModal();
-        }
-        
-        console.log('✅ Aplikasi siap!');
-    </script>
-</body>
-</html>
+      });
+    }
+  });
+  
+  const sortedMonths = {};
+  Object.keys(months).sort().forEach(key => {
+    sortedMonths[key] = months[key];
+  });
+  
+  return sortedMonths;
+}
+
+function addIncome(sheet, e) {
+  const category = e.parameter.category;
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  
+  if (!category || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Semua field harus diisi'
+    };
+  }
+  
+  const sheetName = `Pemasukan_${category}`;
+  const ws = getOrCreateSheet(sheet, sheetName);
+  ws.appendRow([tanggal, keterangan, nominal, '']);
+  
+  return {
+    success: true,
+    message: 'Pemasukan berhasil ditambahkan'
+  };
+}
+
+function addExpense(sheet, e) {
+  const category = e.parameter.category;
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+  
+  if (!category || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Semua field harus diisi'
+    };
+  }
+  
+  const sheetName = `Pengeluaran_${category}`;
+  const ws = getOrCreateSheet(sheet, sheetName);
+  ws.appendRow([tanggal, keterangan, nominal, keteranganTambahan]);
+  
+  return {
+    success: true,
+    message: 'Pengeluaran berhasil ditambahkan'
+  };
+}
+
+function deleteData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  const rowId = parseInt(e.parameter.rowId);
+  
+  if (!type || !category || !rowId) {
+    return {
+      success: false,
+      error: 'Parameter tidak lengkap'
+    };
+  }
+  
+  const sheetName = getSheetName(type, category);
+  const ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    return {
+      success: false,
+      error: 'Sheet tidak ditemukan'
+    };
+  }
+  
+  ws.deleteRow(rowId);
+  return {
+    success: true,
+    message: 'Data berhasil dihapus'
+  };
+}
+
+function updateData(sheet, e) {
+  const type = e.parameter.type;
+  const category = e.parameter.category;
+  const rowId = parseInt(e.parameter.rowId);
+  const tanggal = e.parameter.tanggal;
+  const keterangan = e.parameter.keterangan;
+  const nominal = parseFloat(e.parameter.nominal);
+  const keteranganTambahan = e.parameter.keteranganTambahan || '';
+  
+  if (!type || !category || !rowId || !tanggal || !keterangan || !nominal) {
+    return {
+      success: false,
+      error: 'Parameter tidak lengkap'
+    };
+  }
+  
+  const sheetName = getSheetName(type, category);
+  const ws = sheet.getSheetByName(sheetName);
+  
+  if (!ws) {
+    return {
+      success: false,
+      error: 'Sheet tidak ditemukan'
+    };
+  }
+  
+  ws.getRange(rowId, 1).setValue(tanggal);
+  ws.getRange(rowId, 2).setValue(keterangan);
+  ws.getRange(rowId, 3).setValue(nominal);
+  ws.getRange(rowId, 4).setValue(keteranganTambahan);
+  
+  return {
+    success: true,
+    message: 'Data berhasil diupdate'
+  };
+}
+
+// ============================================
+// FUNGSI PEMBANTU
+// ============================================
+
+function getSheetName(type, category) {
+  const typeMap = { income: 'Pemasukan', expense: 'Pengeluaran' };
+  return `${typeMap[type]}_${category}`;
+}
+
+function getOrCreateSheet(sheet, sheetName) {
+  let ws = sheet.getSheetByName(sheetName);
+  if (!ws) {
+    ws = sheet.insertSheet(sheetName);
+    ws.appendRow(['Tanggal', 'Keterangan', 'Nominal', 'Keterangan Tambahan']);
+  }
+  return ws;
+}
+
+function createSheet(sheet, sheetName) {
+  let ws = sheet.getSheetByName(sheetName);
+  if (!ws) {
+    ws = sheet.insertSheet(sheetName);
+    ws.appendRow(['Tanggal', 'Keterangan', 'Nominal', 'Keterangan Tambahan']);
+  }
+  return ws;
+}
+
+function createJSONResponse(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function formatNumber(num) {
+  return new Intl.NumberFormat('id-ID').format(Math.round(num || 0));
+}
+
+function testAPI() {
+  Logger.log('Testing API...');
+  const sheet = SpreadsheetApp.openById(SHEET_ID);
+  const dashboard = getDashboard(sheet);
+  Logger.log(dashboard);
+  return dashboard;
+}
