@@ -14,19 +14,19 @@ const CONFIG = {
     proxyUrl: '/api/proxy',
     
     // ==========================================
-    // SPREADSHEET ID (Untuk READ via API)
+    // SPREADSHEET ID
     // ==========================================
     spreadsheetId: '1UEamMydVptgCs1YnJIik5fVbFvZXgwY-mv5QyYOHqH4',
     
     // ==========================================
-    // API KEY (Untuk READ via API)
+    // API KEY
     // ==========================================
     apiKey: 'AIzaSyAiVL0pz7UD9qYnYTd6cmGey5zkUseTBNE',
     
     // ==========================================
     // MODE APLIKASI
     // ==========================================
-    mode: 'full' // 'full' atau 'readonly'
+    mode: 'full'
 };
 
 // ============================================
