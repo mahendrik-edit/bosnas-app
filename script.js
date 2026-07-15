@@ -245,4 +245,290 @@ function updateChart() {
     const bulanMap = {};
     allData.forEach(d => {
         if (!bulanMap[d.bulan]) {
-            bulanMap[d.bulan] = { pemasukan: 0, peng
+            bulanMap[d.bulan] = { pemasukan: 0, pengeluaran: 0 };
+        }
+        if (d.tipe === 'Pemasukan') {
+            bulanMap[d.bulan].pemasukan += (d.nominal || 0);
+        } else {
+            bulanMap[d.bulan].pengeluaran += (d.nominal || 0);
+        }
+    });
+    
+    const labels = Object.keys(bulanMap);
+    const pemasukan = labels.map(b => bulanMap[b].pemasukan);
+    const pengeluaran = labels.map(b => bulanMap[b].pengeluaran);
+    const saldo = labels.map(b => bulanMap[b].pemasukan - bulanMap[b].pengeluaran);
+    
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Pemasukan',
+                    data: pemasukan,
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                    borderColor: '#22c55e',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Pengeluaran',
+                    data: pengeluaran,
+                    backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                    borderColor: '#ef4444',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Saldo',
+                    data: saldo,
+                    type: 'line',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderColor: '#3b82f6',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#3b82f6',
+                    tension: 0.3,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': Rp ' + 
+                                context.parsed.y.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return 'Rp ' + value.toLocaleString('id-ID');
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ============================================
+// CRUD OPERATIONS
+// ============================================
+
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = '➕ Tambah Transaksi';
+    document.getElementById('editId').value = '';
+    document.getElementById('transactionForm').reset();
+    document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('metodeGroup').style.display = 'none';
+    document.getElementById('modal').classList.add('active');
+}
+
+async function editTransaction(id) {
+    const row = allData.find(d => d.id === id);
+    if (!row) {
+        Swal.fire('Error', 'Data tidak ditemukan', 'error');
+        return;
+    }
+    
+    document.getElementById('modalTitle').textContent = '✏️ Edit Transaksi';
+    document.getElementById('editId').value = id;
+    document.getElementById('formTanggal').value = row.tanggal || '';
+    document.getElementById('formKeterangan').value = row.keterangan || '';
+    document.getElementById('formKategori').value = row.kategori || 'SPJ';
+    document.getElementById('formTipe').value = row.tipe || 'Pemasukan';
+    document.getElementById('formNominal').value = row.nominal || '';
+    document.getElementById('formStatus').value = row.status || 'Valid';
+    document.getElementById('formMetode').value = row.metode || 'Tunai';
+    
+    // Toggle metode
+    toggleMetode();
+    
+    document.getElementById('modal').classList.add('active');
+}
+
+async function saveTransaction(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('editId').value;
+    const kategori = document.getElementById('formKategori').value;
+    const tipe = document.getElementById('formTipe').value;
+    
+    const data = {
+        tanggal: document.getElementById('formTanggal').value,
+        keterangan: document.getElementById('formKeterangan').value,
+        kategori: kategori,
+        tipe: tipe,
+        nominal: parseFloat(document.getElementById('formNominal').value),
+        status: document.getElementById('formStatus').value,
+        tahun: new Date().getFullYear()
+    };
+    
+    // Tambahkan metode hanya jika SPJ + Pengeluaran
+    if (kategori === 'SPJ' && tipe === 'Pengeluaran') {
+        data.metode = document.getElementById('formMetode').value;
+    }
+    
+    const action = id ? 'update' : 'add';
+    if (id) data.id = id;
+    
+    const btn = document.querySelector('.btn-save');
+    btn.textContent = '⏳ Menyimpan...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(CONFIG.webAppUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, ...data })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            Swal.fire('Berhasil!', result.message, 'success');
+            closeModal();
+            await loadData();
+        } else {
+            Swal.fire('Gagal!', result.error || 'Terjadi kesalahan', 'error');
+        }
+    } catch (error) {
+        Swal.fire('Error!', error.message, 'error');
+    } finally {
+        btn.textContent = '💾 Simpan';
+        btn.disabled = false;
+    }
+}
+
+async function deleteTransaction(id) {
+    const result = await Swal.fire({
+        title: 'Hapus Transaksi?',
+        text: 'Data yang dihapus tidak dapat dikembalikan!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: 'Ya, Hapus!',
+        cancelButtonText: 'Batal'
+    });
+    
+    if (!result.isConfirmed) return;
+    
+    try {
+        const response = await fetch(CONFIG.webAppUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', id: id })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            Swal.fire('Terhapus!', data.message, 'success');
+            await loadData();
+        } else {
+            Swal.fire('Gagal!', data.error || 'Terjadi kesalahan', 'error');
+        }
+    } catch (error) {
+        Swal.fire('Error!', error.message, 'error');
+    }
+}
+
+// ============================================
+// MODAL
+// ============================================
+
+function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// ============================================
+// EXPORT
+// ============================================
+
+function exportData() {
+    const filtered = filterData(allData);
+    if (!filtered.length) {
+        Swal.fire('Info', 'Tidak ada data untuk diexport', 'info');
+        return;
+    }
+    
+    const headers = ['ID', 'Tanggal', 'Bulan', 'Keterangan', 'Kategori', 'Tipe', 'Metode', 'Nominal', 'Status'];
+    const rows = filtered.map(d => [
+        d.id || '',
+        d.tanggal || '',
+        d.bulan || '',
+        d.keterangan || '',
+        d.kategori || '',
+        d.tipe || '',
+        d.metode || '',
+        d.nominal || 0,
+        d.status || ''
+    ]);
+    
+    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `BOSNAS_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ============================================
+// REFRESH
+// ============================================
+
+function refreshData() {
+    const btn = document.querySelector('.btn-refresh');
+    btn.textContent = '⏳ Loading...';
+    btn.disabled = true;
+    loadData().finally(() => {
+        btn.textContent = '🔄 Refresh';
+        btn.disabled = false;
+    });
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+function formatRupiah(angka) {
+    if (isNaN(angka) || angka === null || angka === undefined) return 'Rp 0';
+    return 'Rp ' + Math.round(angka).toLocaleString('id-ID');
+}
+
+function truncateText(text, maxLength) {
+    if (!text) return '-';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function updateLastUpdated() {
+    const now = new Date();
+    document.getElementById('lastUpdated').textContent = '🕐 ' + now.toLocaleString('id-ID');
+}
+
+// ============================================
+// AUTO REFRESH (5 menit)
+// ============================================
+
+setInterval(refreshData, 5 * 60 * 1000);
+
+// ============================================
+// START
+// ============================================
+
+document.addEventListener('DOMContentLoaded', loadData);
