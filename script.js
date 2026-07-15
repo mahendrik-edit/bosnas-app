@@ -27,6 +27,19 @@ function updateLastUpdated() {
     if (el) el.textContent = '🕐 ' + now.toLocaleString('id-ID');
 }
 
+function getCurrentDate() {
+    const now = new Date();
+    return now.toISOString().split('T')[0];
+}
+
+function getBulanFromDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const bulanNames = ['Januari','Februari','Maret','April','Mei','Juni',
+                        'Juli','Agustus','September','Oktober','November','Desember'];
+    return bulanNames[date.getMonth()];
+}
+
 // ============================================
 // TOGGLE METODE
 // ============================================
@@ -48,15 +61,41 @@ function toggleMetode() {
 }
 
 // ============================================
-// CHECK MODE
+// CALL WEB APP API
 // ============================================
 
-function isReadOnly() {
-    return CONFIG.mode === 'readonly';
+async function callWebApp(action, data = {}) {
+    try {
+        const payload = { action, ...data };
+        
+        console.log(`📡 Calling Web App: ${action}`, payload);
+        
+        const response = await fetch(CONFIG.webAppUrl, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+        
+        const result = await response.json();
+        console.log(`✅ Web App Response:`, result);
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Web App Error:', error);
+        throw error;
+    }
 }
 
 // ============================================
-// FETCH VIA API KEY
+// FETCH VIA API KEY (READ - NO CORS)
 // ============================================
 
 async function fetchDataViaAPI() {
@@ -66,18 +105,13 @@ async function fetchDataViaAPI() {
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.spreadsheetId}/values/MASTER_DATA!A:I?key=${CONFIG.apiKey}`;
         const response = await fetch(url);
         
-        console.log('API Response Status:', response.status);
-        
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API Error Response:', errorText);
-            
             let errorMessage = `HTTP ${response.status}`;
             try {
                 const errorJson = JSON.parse(errorText);
                 errorMessage = errorJson.error?.message || errorMessage;
             } catch (e) {}
-            
             throw new Error(`API Error: ${errorMessage}`);
         }
         
@@ -85,7 +119,6 @@ async function fetchDataViaAPI() {
         const rows = result.values || [];
         
         if (rows.length < 2) {
-            console.warn('⚠️ Tidak ada data di spreadsheet');
             return [];
         }
         
@@ -111,7 +144,7 @@ async function fetchDataViaAPI() {
 }
 
 // ============================================
-// LOAD DATA
+// LOAD DATA - READ dari API Key
 // ============================================
 
 async function loadData() {
@@ -135,7 +168,6 @@ async function loadData() {
         updateTable();
         updateChart();
         updateLastUpdated();
-        updateModeUI();
         
     } catch (error) {
         console.error('❌ Error:', error);
@@ -147,56 +179,15 @@ async function loadData() {
                     <br><br>
                     <div style="text-align:left;max-width:500px;margin:0 auto;background:#f8f9fa;padding:15px;border-radius:8px;font-size:13px;color:#666;">
                         <strong>💡 Solusi:</strong><br>
-                        1. Pastikan Google Sheets API sudah diaktifkan di Google Cloud Console<br>
-                        2. Pastikan API Key valid dan memiliki akses ke spreadsheet<br>
-                        3. Pastikan sheet bernama <strong>MASTER_DATA</strong><br>
-                        4. Pastikan spreadsheet ID benar di config.js
+                        1. Pastikan Google Sheets API sudah diaktifkan<br>
+                        2. Pastikan API Key valid<br>
+                        3. Pastikan sheet bernama <strong>MASTER_DATA</strong>
                     </div>
                     <br>
                     <button onclick="loadData()" class="btn btn-refresh" style="padding:10px 30px;">🔄 Coba Lagi</button>
                 </td></tr>
             `;
         }
-    }
-}
-
-// ============================================
-// UPDATE MODE UI
-// ============================================
-
-function updateModeUI() {
-    const isReadOnlyMode = isReadOnly();
-    const btnAdd = document.getElementById('btnAdd');
-    const btnSave = document.getElementById('btnSave');
-    const modeBadge = document.getElementById('modeBadge');
-    const readonlyInfo = document.getElementById('readonlyInfo');
-    
-    if (btnAdd) {
-        btnAdd.disabled = isReadOnlyMode;
-        btnAdd.title = isReadOnlyMode ? 'Fitur dinonaktifkan (Read-Only)' : 'Tambah Transaksi';
-        btnAdd.style.opacity = isReadOnlyMode ? '0.5' : '1';
-        btnAdd.style.cursor = isReadOnlyMode ? 'not-allowed' : 'pointer';
-    }
-    
-    if (btnSave) {
-        btnSave.disabled = isReadOnlyMode;
-        btnSave.title = isReadOnlyMode ? 'Fitur dinonaktifkan (Read-Only)' : '';
-        btnSave.style.opacity = isReadOnlyMode ? '0.5' : '1';
-        btnSave.style.cursor = isReadOnlyMode ? 'not-allowed' : 'pointer';
-    }
-    
-    if (modeBadge) {
-        if (isReadOnlyMode) {
-            modeBadge.textContent = '🔒 Read-Only';
-            modeBadge.style.background = '#ef4444';
-        } else {
-            modeBadge.textContent = '📝 Full Access';
-            modeBadge.style.background = '#22c55e';
-        }
-    }
-    
-    if (readonlyInfo) {
-        readonlyInfo.style.display = isReadOnlyMode ? 'block' : 'none';
     }
 }
 
@@ -344,8 +335,6 @@ function updateTable(data = allData) {
     const end = start + rowsPerPage;
     const pageData = filtered.slice(start, end);
     
-    const isReadOnlyMode = isReadOnly();
-    
     tbody.innerHTML = pageData.map(row => {
         const statusClass = (row.status || 'Valid').toLowerCase();
         const nominal = row.nominal || 0;
@@ -365,13 +354,8 @@ function updateTable(data = allData) {
                 <td class="${isPemasukan ? 'text-green' : 'text-red'}">${formatRupiah(nominal)}</td>
                 <td><span class="badge-status ${statusClass}">${row.status || 'Valid'}</span></td>
                 <td>
-                    ${isReadOnlyMode ? 
-                        '<span style="color:#999;font-size:12px;">🔒</span>' :
-                        `
-                        <button class="btn-action btn-edit" onclick="editTransaction('${row.id}')">✏️</button>
-                        <button class="btn-action btn-delete" onclick="deleteTransaction('${row.id}')">🗑️</button>
-                        `
-                    }
+                    <button class="btn-action btn-edit" onclick="editTransaction('${row.id}')">✏️</button>
+                    <button class="btn-action btn-delete" onclick="deleteTransaction('${row.id}')">🗑️</button>
                 </td>
             </tr>
         `;
@@ -476,29 +460,19 @@ function updateChart() {
 }
 
 // ============================================
-// CRUD OPERATIONS (Hanya jika bukan Read-Only)
+// CRUD OPERATIONS (via Web App)
 // ============================================
 
 function showAddModal() {
-    if (isReadOnly()) {
-        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menambah data', 'info');
-        return;
-    }
-    
     document.getElementById('modalTitle').textContent = '➕ Tambah Transaksi';
     document.getElementById('editId').value = '';
     document.getElementById('transactionForm').reset();
-    document.getElementById('formTanggal').value = new Date().toISOString().split('T')[0];
+    document.getElementById('formTanggal').value = getCurrentDate();
     document.getElementById('metodeGroup').style.display = 'none';
     document.getElementById('modal').classList.add('active');
 }
 
 async function editTransaction(id) {
-    if (isReadOnly()) {
-        Swal.fire('Info', 'Mode Read-Only: Tidak dapat mengedit data', 'info');
-        return;
-    }
-    
     const row = allData.find(d => d.id === id);
     if (!row) {
         Swal.fire('Error', 'Data tidak ditemukan', 'error');
@@ -522,17 +496,14 @@ async function editTransaction(id) {
 async function saveTransaction(e) {
     e.preventDefault();
     
-    if (isReadOnly()) {
-        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menyimpan data', 'info');
-        return;
-    }
-    
     const id = document.getElementById('editId').value;
     const kategori = document.getElementById('formKategori').value;
     const tipe = document.getElementById('formTipe').value;
+    const tanggal = document.getElementById('formTanggal').value;
     
     const data = {
-        tanggal: document.getElementById('formTanggal').value,
+        tanggal: tanggal,
+        bulan: getBulanFromDate(tanggal),
         keterangan: document.getElementById('formKeterangan').value,
         kategori: kategori,
         tipe: tipe,
@@ -549,18 +520,13 @@ async function saveTransaction(e) {
     if (id) data.id = id;
     
     const btn = document.querySelector('.btn-save');
+    const originalText = btn.textContent;
     btn.textContent = '⏳ Menyimpan...';
     btn.disabled = true;
     
     try {
-        // Coba via Web App (akan error CORS)
-        const response = await fetch(CONFIG.webAppUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, ...data })
-        });
-        
-        const result = await response.json();
+        // CALL WEB APP (bukan proxy)
+        const result = await callWebApp(action, data);
         
         if (result.success) {
             Swal.fire('Berhasil!', result.message, 'success');
@@ -572,38 +538,32 @@ async function saveTransaction(e) {
     } catch (error) {
         console.error('Save error:', error);
         
-        // Tampilkan pesan yang lebih informatif
-        if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+        // Cek apakah error karena CORS
+        if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
             Swal.fire({
                 title: '⚠️ CORS Error',
                 html: `
                     <p>Tidak dapat menyimpan data karena <strong>CORS</strong>.</p>
                     <br>
                     <div style="text-align:left;font-size:13px;color:#666;">
-                        <strong>Solusi:</strong><br>
-                        1. Buka Google Sheets langsung untuk menambah/edit data<br>
-                        2. Atau deploy Web App dengan setting "Anyone"<br>
-                        3. Atau gunakan Vercel Serverless Function sebagai proxy
+                        <strong>💡 Solusi:</strong><br>
+                        1. Deploy ulang Google Apps Script dengan setting <strong>"Anyone"</strong><br>
+                        2. Atau gunakan data secara manual di Google Sheets
                     </div>
                 `,
                 icon: 'warning',
                 confirmButtonText: 'OK'
             });
         } else {
-            Swal.fire('Error!', error.message, 'error');
+            Swal.fire('Error!', error.message || 'Terjadi kesalahan saat menyimpan', 'error');
         }
     } finally {
-        btn.textContent = '💾 Simpan';
+        btn.textContent = originalText;
         btn.disabled = false;
     }
 }
 
 async function deleteTransaction(id) {
-    if (isReadOnly()) {
-        Swal.fire('Info', 'Mode Read-Only: Tidak dapat menghapus data', 'info');
-        return;
-    }
-    
     const result = await Swal.fire({
         title: 'Hapus Transaksi?',
         text: 'Data yang dihapus tidak dapat dikembalikan!',
@@ -618,13 +578,7 @@ async function deleteTransaction(id) {
     if (!result.isConfirmed) return;
     
     try {
-        const response = await fetch(CONFIG.webAppUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'delete', id: id })
-        });
-        
-        const data = await response.json();
+        const data = await callWebApp('delete', { id });
         
         if (data.success) {
             Swal.fire('Terhapus!', data.message, 'success');
@@ -634,7 +588,7 @@ async function deleteTransaction(id) {
         }
     } catch (error) {
         console.error('Delete error:', error);
-        Swal.fire('Error!', 'Gagal menghapus data. CORS error.', 'error');
+        Swal.fire('Error!', error.message || 'Terjadi kesalahan saat menghapus', 'error');
     }
 }
 
