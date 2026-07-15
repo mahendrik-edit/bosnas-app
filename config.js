@@ -14,10 +14,14 @@ const CONFIG = {
     spreadsheetId: '1UEamMydVptgCs1YnJIik5fVbFvZXgwY-mv5QyYOHqH4',
     
     // ==========================================
-    // API KEY - GANTI DENGAN API KEY ANDA
-    // Cara dapatkan: Google Cloud Console > Credentials > API Key
+    // API KEY
     // ==========================================
-    apiKey: 'AIzaSyAiVL0pz7UD9qYnYTd6cmGey5zkUseTBNE'
+    apiKey: 'AIzaSyAiVL0pz7UD9qYnYTd6cmGey5zkUseTBNE',
+    
+    // ==========================================
+    // DEBUG MODE (Tambahan)
+    // ==========================================
+    debug: true // Set ke false untuk production
 };
 
 // ============================================
